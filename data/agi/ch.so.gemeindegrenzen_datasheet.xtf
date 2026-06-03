@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ili:transfer xmlns="http://www.interlis.ch/xtf/2.4/SO_AGI_DataCatalog_Datasheet_20260523" xmlns:base="http://www.interlis.ch/xtf/2.4/SO_AGI_DataCatalog_Base_20260529" xmlns:ili="http://www.interlis.ch/xtf/2.4/INTERLIS">
+  <ili:headersection>
+    <ili:models>
+      <ili:model>SO_AGI_DataCatalog_Datasheet_20260523</ili:model>
+      <ili:model>SO_AGI_DataCatalog_Base_20260529</ili:model>
+    </ili:models>
+    <ili:sender>ChatGPT</ili:sender>
+    <ili:comment>Datenblatt aus CSV mit Gemeindegrenzen erzeugt; Klasse Metadata.DatasetSeries, Issue 2026.</ili:comment>
+  </ili:headersection>
+  <ili:datasection>
+    <Metadata ili:bid="b1">
+      <DatasetSeries ili:tid="ch.so.gemeindegrenzen">
+        <identifier>ch.so.gemeindegrenzen</identifier>
+        <title>Gemeindegrenzen Kanton Solothurn</title>
+        <description>Geometrien der Gemeinden des Kantons Solothurn mit Gemeindename, BFS-Gemeindenummer, Bezirk und Kanton. Die Datenreihe führt die Gemeindegrenzen nach Jahr; die Ausgabe 2026 beschreibt den Stand der Gemeindeeinteilung im Jahr 2026.</description>
+        <accessLevel>open</accessLevel>
+        <publicationStatus>published</publicationStatus>
+        <creatorRef>ch.so.agi</creatorRef>
+        <contactPoint>
+          <base:ContactPoint>
+            <base:name>Amt für Geoinformation</base:name>
+            <base:organizationUnit>Amt für Geoinformation</base:organizationUnit>
+            <base:email>mailto:agi@bd.so.ch</base:email>
+            <base:url>https://geo.so.ch</base:url>
+          </base:ContactPoint>
+        </contactPoint>
+        <themes>Geografie</themes>
+        <themes>Verwaltung</themes>
+        <keywords>Gemeindegrenzen</keywords>
+        <keywords>Gemeinden</keywords>
+        <keywords>politische Gemeinden</keywords>
+        <keywords>Gemeindegebiet</keywords>
+        <keywords>Bezirk</keywords>
+        <keywords>BFS-Gemeindenummer</keywords>
+        <keywords>Kanton Solothurn</keywords>
+        <keywords>Grenzen</keywords>
+        <keywords>Geometrie</keywords>
+        <keywords>WKT</keywords>
+        <keywords>LV95</keywords>
+        <keywords>EPSG:2056</keywords>
+        <accrualPeriodicity>annually</accrualPeriodicity>
+        <modified>2026-01-01</modified>
+        <temporalCoverage>
+          <ClosedTemporalCoverage>
+            <base:startDate>2026-01-01</base:startDate>
+            <base:endDate>2026-12-31</base:endDate>
+          </ClosedTemporalCoverage>
+        </temporalCoverage>
+        <surveyMethod>Ableitung beziehungsweise Publikation der amtlichen Gemeindegrenzen des Kantons Solothurn für ein bestimmtes Jahr. Beobachtungseinheit: politische Gemeinde. Räumliche Referenz: Schweizer Landeskoordinaten LV95 / EPSG:2056. Die Geometrie ist in der CSV als WKT-MULTIPOLYGON enthalten.</surveyMethod>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Geometrie</base:name>
+            <base:dataType>WKT MULTIPOLYGON</base:dataType>
+            <base:description>Flächengeometrie der Gemeindegrenze als WKT-MULTIPOLYGON. Die Koordinaten liegen in Schweizer Landeskoordinaten LV95 / EPSG:2056 vor.</base:description>
+            <base:unit>Koordinaten in Meter</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>T_Id</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Technischer numerischer Identifikator aus dem Export beziehungsweise Quellsystem. Nicht als fachlicher stabiler Identifikator verwenden.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>T_Ili_Tid</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Technischer INTERLIS-Transferidentifikator der Geometrie beziehungsweise des Gemeindeobjekts.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>gemeindename</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Name der politischen Gemeinde.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>bfs_gemeindenummer</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>BFS-Gemeindenummer der politischen Gemeinde.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>bezirksname</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Name des Bezirks, dem die Gemeinde zugeordnet ist.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>kantonsname</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Name des Kantons.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <model>CSV mit WKT-Geometrie; Geometrie in LV95 / EPSG:2056</model>
+        <dataAvailableFrom>2026</dataAvailableFrom>
+        <furtherUses>Die Daten können für Karten, räumliche Analysen, Verknüpfungen mit Gemeindestatistiken, Bezirkssummen und kommunale Auswertungen verwendet werden.</furtherUses>
+        <remarks>Der angehängte CSV-Text enthält 1 Datenzeile(n) und die Spalten: Geometrie, T_Id, T_Ili_Tid, gemeindename, bfs_gemeindenummer, bezirksname, kantonsname. Dieses Datenblatt wurde automatisch aus der angehängten CSV-Datei und dem DatasetSeries-Beispiel abgeleitet und sollte vor der Publikation fachlich geprüft werden. Das Datum 2026-01-01 wurde als angenommener Stand der Gemeindegrenzen für die Ausgabe 2026 gesetzt.</remarks>
+        <issues>
+          <DatasetIssue>
+            <identifier>ch.so.gemeindegrenzen_2026</identifier>
+            <title>Gemeindegrenzen Kanton Solothurn 2026</title>
+            <description>Ausgabe 2026 der Datenreihe Gemeindegrenzen Kanton Solothurn. Die Ausgabe enthält Geometrien der politischen Gemeinden mit Gemeindename, BFS-Gemeindenummer, Bezirk und Kanton.</description>
+            <issueLabel>2026</issueLabel>
+            <isCurrentIssue>true</isCurrentIssue>
+            <publicationStatus>published</publicationStatus>
+            <accrualPeriodicity>annually</accrualPeriodicity>
+            <modified>2026-01-01</modified>
+            <temporalCoverage>
+              <ClosedTemporalCoverage>
+                <base:startDate>2026-01-01</base:startDate>
+                <base:endDate>2026-12-31</base:endDate>
+              </ClosedTemporalCoverage>
+            </temporalCoverage>
+            <surveyMethod>Ausgabe der Gemeindegrenzen für das Jahr 2026. Beobachtungseinheit: politische Gemeinde. Die Geometrie wird als WKT-MULTIPOLYGON in LV95 / EPSG:2056 geliefert.</surveyMethod>
+            <dataAvailableFrom>2026</dataAvailableFrom>
+            <auxiliaryData>Amtliche Gemeindegrenzen und administrative Zuordnung zu Bezirk und Kanton.</auxiliaryData>
+            <remarks>Issue 2026. Die Attributbeschreibungen sind auf Ebene der DatasetSeries geführt. Vor Publikation sollten insbesondere Stichtag, Publikationsstatus und Kontaktstelle fachlich geprüft werden.</remarks>
+          </DatasetIssue>
+        </issues>
+      </DatasetSeries>
+    </Metadata>
+  </ili:datasection>
+</ili:transfer>

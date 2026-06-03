@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ili:transfer xmlns="http://www.interlis.ch/xtf/2.4/SO_AGI_DataCatalog_Datasheet_20260523" xmlns:base="http://www.interlis.ch/xtf/2.4/SO_AGI_DataCatalog_Base_20260529" xmlns:ili="http://www.interlis.ch/xtf/2.4/INTERLIS">
+  <ili:headersection>
+    <ili:models>
+      <ili:model>SO_AGI_DataCatalog_Datasheet_20260523</ili:model>
+      <ili:model>SO_AGI_DataCatalog_Base_20260529</ili:model>
+    </ili:models>
+    <ili:sender>ChatGPT</ili:sender>
+    <ili:comment>Datenblatt aus ch.so.bevoelkerung.wohnbevoelkerung.gemeinde_altersgruppen_geschlecht_2025.csv erzeugt; Klasse Metadata.DatasetSeries, Issue 2025.</ili:comment>
+  </ili:headersection>
+  <ili:datasection>
+    <Metadata ili:bid="b1">
+      <DatasetSeries ili:tid="ch.so.bevoelkerung.wohnbevoelkerung.gemeinde_altersgruppen_geschlecht">
+        <identifier>ch.so.bevoelkerung.wohnbevoelkerung.gemeinde_altersgruppen_geschlecht</identifier>
+        <title>Wohnbevölkerung nach Gemeinde, Geschlecht, Staatsangehörigkeit und Altersgruppen</title>
+        <description>Wohnbevölkerung im Kanton Solothurn nach Gemeinde, Bezirk, Geschlecht, Staatsangehörigkeit und Altersgruppen. Die Daten beschreiben den Stand per 31.12.2025 und enthalten je Gemeinde aggregierte Personenzahlen: Geschlechtstotale, Total Schweizerinnen und Schweizer, Total Ausländerinnen und Ausländer sowie Altersgruppen. Die angehängte CSV-Datei enthält 106 Zeilen und 12 Spalten.</description>
+        <accessLevel>open</accessLevel>
+        <publicationStatus>published</publicationStatus>
+        <creatorRef>ch.so.afin</creatorRef>
+        <contactPoint>
+          <base:ContactPoint>
+            <base:name>Amt für Finanzen, Statistik (AFIN)</base:name>
+            <base:organizationUnit>Statistik</base:organizationUnit>
+            <base:email>mailto:statistik@fd.so.ch</base:email>
+            <base:url>https://so.ch/verwaltung/finanzdepartement/amt-fuer-finanzen/statistikportal/</base:url>
+          </base:ContactPoint>
+        </contactPoint>
+        <themes>Bevoelkerung</themes>
+        <keywords>Wohnbevölkerung</keywords>
+        <keywords>Bevölkerung</keywords>
+        <keywords>Gemeinde</keywords>
+        <keywords>Bezirk</keywords>
+        <keywords>Geschlecht</keywords>
+        <keywords>Staatsangehörigkeit</keywords>
+        <keywords>Altersgruppen</keywords>
+        <keywords>Einwohnerregister</keywords>
+        <accrualPeriodicity>annually</accrualPeriodicity>
+        <modified>2025-12-31</modified>
+        <temporalCoverage>
+          <ClosedTemporalCoverage>
+            <base:referenceDate>2025-12-31</base:referenceDate>
+          </ClosedTemporalCoverage>
+        </temporalCoverage>
+        <surveyMethod>Quelle: Einwohnerregister Kanton Solothurn
+Beobachtungseinheit: Gemeinde
+Stichtag: 31.12.2025
+Publikationsjahr: 2026</surveyMethod>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>BFS_Nr</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>BFS-Gemeindenummer der Gemeinde. Der Wert ist ein administrativer Code und keine Messgrösse.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Bezirk</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Name des Bezirks, dem die Gemeinde zugeordnet ist.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Gemeinden_und_Bezirke</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Name der Gemeinde beziehungsweise der im Ausgangsdatenblatt bezeichneten räumlichen Einheit.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Total_Maennlich</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Anzahl männliche Personen total.</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Total_Weiblich</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Anzahl weibliche Personen total.</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Total_SchweizerInnen</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Anzahl Personen mit Schweizer Staatsangehörigkeit.</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Total_AuslaenderInnen</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Anzahl Personen mit ausländischer Staatsangehörigkeit.</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Alter_0_bis_19</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Anzahl Personen in der Altersgruppe 0 bis 19 Jahre.</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Alter_20_bis_39</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Anzahl Personen in der Altersgruppe 20 bis 39 Jahre.</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Alter_40_bis_64</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Anzahl Personen in der Altersgruppe 40 bis 64 Jahre.</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Alter_65_bis_79</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Anzahl Personen in der Altersgruppe 65 bis 79 Jahre.</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Alter_80_und_mehr</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Anzahl Personen in der Altersgruppe 80 Jahre und älter.</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <model>CSV; semikolongetrennte Tabelle</model>
+        <dataAvailableFrom>2025</dataAvailableFrom>
+        <furtherUses>Die Daten können für Bevölkerungsstatistik, kommunale Analysen, Planungsgrundlagen und Visualisierungen nach Gemeinde, Altersgruppe, Geschlecht und Staatsangehörigkeit verwendet werden.</furtherUses>
+        <remarks>Dieses Datenblatt wurde automatisch aus der angehängten CSV-Datei und dem ähnlichen DatasetSeries-Beispiel abgeleitet und sollte fachlich geprüft werden. Die CSV enthält keine eigene Spalte Total; die Gesamtbevölkerung kann aus Total_Maennlich + Total_Weiblich beziehungsweise aus Total_SchweizerInnen + Total_AuslaenderInnen berechnet werden. Plausibilitätsprüfung: Die Summen nach Geschlecht und Staatsangehörigkeit stimmen in allen Zeilen überein. Die Summen der Altersgruppen weichen jedoch bei einzelnen Gemeinden von Total_Maennlich + Total_Weiblich ab (Grenchen: Differenz 2; Zuchwil: Differenz 1). Zudem kommt mindestens eine BFS_Nr mehrfach vor (BFS_Nr 2525: Halten, Kriegstetten, Oekingen).</remarks>
+        <issues>
+          <DatasetIssue>
+            <identifier>ch.so.bevoelkerung.wohnbevoelkerung.gemeinde_altersgruppen_geschlecht_2025</identifier>
+            <title>Wohnbevölkerung nach Gemeinde, Geschlecht, Staatsangehörigkeit und Altersgruppen 2025</title>
+            <description>Ausgabe 2025 der Datenreihe. Stichtag: 31.12.2025. Publikationsjahr: 2026. Die Ausgabe enthält die angehängte CSV-Datei mit Gemeindewerten für den Kanton Solothurn.</description>
+            <issueLabel>2025</issueLabel>
+            <isCurrentIssue>true</isCurrentIssue>
+            <publicationStatus>draft</publicationStatus>
+            <accrualPeriodicity>annually</accrualPeriodicity>
+            <modified>2025-12-31</modified>
+            <temporalCoverage>
+              <ClosedTemporalCoverage>
+                <base:referenceDate>2025-12-31</base:referenceDate>
+              </ClosedTemporalCoverage>
+            </temporalCoverage>
+            <surveyMethod>Quelle: Einwohnerregister Kanton Solothurn
+Beobachtungseinheit: Gemeinde
+Stichtag: 31.12.2025
+Publikationsjahr: 2026</surveyMethod>
+            <dataAvailableFrom>2025</dataAvailableFrom>
+            <auxiliaryData>Einwohnerregister Kanton Solothurn</auxiliaryData>
+            <remarks>Issue 2025. Die Attributbeschreibungen sind auf Ebene der DatasetSeries geführt. Vor Publikation sollten insbesondere die genannten Plausibilitätsauffälligkeiten geprüft werden.</remarks>
+          </DatasetIssue>
+        </issues>
+      </DatasetSeries>
+    </Metadata>
+  </ili:datasection>
+</ili:transfer>

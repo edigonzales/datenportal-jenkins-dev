@@ -1,0 +1,12 @@
+Started by user [8mha:////4I4u3WLqf7NzXHd9cekACAbWt17VCi9ZQX4SQ0gsIy6WAAAAlx+LCAAAAAAAAP9b85aBtbiIQTGjNKU4P08vOT+vOD8nVc83PyU1x6OyILUoJzMv2y+/JJUBAhiZGBgqihhk0NSjKDWzXb3RdlLBUSYGJk8GtpzUvPSSDB8G5tKinBIGIZ+sxLJE/ZzEvHT94JKizLx0a6BxUmjGOUNodHsLgAzWEgZu/dLi1CL9xJTczDwAj6GcLcAAAAA=[0madmin
+Running as SYSTEM
+Building in workspace /Users/stefan/sources/datenportal-jenkins-dev/jenkins-home/workspace/gretl-datenportal-plugin-generator-local
+Updating managed topic repository checkout: /Users/stefan/sources/datenportal-jenkins-dev/jenkins-home/gretl-datenportal/topic-repo
+From file:///Users/stefan/sources/datenportal-themenrepo
+   6a2b71c..5d2e7ed  main       -> origin/main
+Reset branch 'main'
+branch 'main' set up to track 'origin/main'.
+Your branch is up to date with 'origin/main'.
+HEAD is now at 5d2e7ed Initialize local Themenrepo v5 content
+Generated GRETL Datenportal jobs: [gretl-datenportal-afu, gretl-datenportal-statistikdienst]
+Finished: SUCCESS

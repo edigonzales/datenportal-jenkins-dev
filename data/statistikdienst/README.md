@@ -1,0 +1,1 @@
+- ch.so.bevoelkerung.wohnbevoelkerung.gemeinde_altersgruppen_geschlecht_2025: Gutes Bespiele für Validierung, da mehrfache BFS-Nummer und Altersgruppensummen stimmen nicht überein: Grenchen 2 und Zuchwil 1.

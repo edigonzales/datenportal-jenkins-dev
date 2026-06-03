@@ -1,0 +1,192 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ili:transfer xmlns="http://www.interlis.ch/xtf/2.4/SO_AGI_DataCatalog_Datasheet_20260523" xmlns:base="http://www.interlis.ch/xtf/2.4/SO_AGI_DataCatalog_Base_20260529" xmlns:ili="http://www.interlis.ch/xtf/2.4/INTERLIS">
+  <ili:headersection>
+    <ili:models>
+      <ili:model>SO_AGI_DataCatalog_Datasheet_20260523</ili:model>
+      <ili:model>SO_AGI_DataCatalog_Base_20260529</ili:model>
+    </ili:models>
+    <ili:sender>ChatGPT</ili:sender>
+    <ili:comment>Datenblatt aus WaGr_Analyse.xlsx und wasserqualitaet_grundwasser_messwerte_long.csv erzeugt; Klasse Metadata.Dataset, keine DatasetSeries.</ili:comment>
+  </ili:headersection>
+  <ili:datasection>
+    <Metadata ili:bid="b1">
+      <Dataset ili:tid="ch.so.wasserqualitaet_grundwasser">
+        <identifier>ch.so.wasserqualitaet_grundwasser</identifier>
+        <title>Wasserqualität Grundwasser</title>
+        <description>Messdaten der Grundwasserqualitätsuntersuchungen im Kanton Solothurn. Untersucht wird das Rohwasser in Grundwasserpumpwerken und Quellfassungen. Der Datensatz wird nicht als Datenreihe mit einzelnen Ausgaben geführt, sondern enthält die verfügbaren Messwerte aller gelieferten Jahre in einer long/tidy CSV-Datei.</description>
+        <accessLevel>open</accessLevel>
+        <publicationStatus>published</publicationStatus>
+        <creatorRef>ch.so.afu</creatorRef>
+        <contactPoint>
+          <base:ContactPoint>
+            <base:name>Lukas Egloff</base:name>
+            <base:organizationUnit>Amt für Umwelt, Abteilung Wasser</base:organizationUnit>
+            <base:email>mailto:afu@bd.so.ch</base:email>
+          </base:ContactPoint>
+        </contactPoint>
+        <themes>Raum_und_Umwelt</themes>
+        <keywords>Wasserqualität</keywords>
+        <keywords>Grundwasser</keywords>
+        <keywords>Gewässerschutz</keywords>
+        <keywords>Rohwasser</keywords>
+        <keywords>Grundwasserpumpwerk</keywords>
+        <keywords>Quellfassung</keywords>
+        <keywords>pH</keywords>
+        <keywords>Sauerstoff</keywords>
+        <keywords>DOC</keywords>
+        <keywords>Nitrat</keywords>
+        <keywords>Schwermetalle</keywords>
+        <keywords>Pestizide</keywords>
+        <keywords>Mikroverunreinigungen</keywords>
+        <keywords>NAQUA</keywords>
+        <accrualPeriodicity>annually</accrualPeriodicity>
+        <modified>2025-05-19</modified>
+        <temporalCoverage>
+          <ClosedTemporalCoverage>
+            <base:startDate>2003-01-01</base:startDate>
+            <base:endDate>2024-12-31</base:endDate>
+          </ClosedTemporalCoverage>
+        </temporalCoverage>
+        <surveyMethod>Langjähriges Monitoring der Grundwasserqualität. Überprüfung, ob gesetzliche Grenzwerte eingehalten werden; Grundlage für Definition und Priorisierung von Grundwasserschutzmassnahmen.
+
+Erhebung: Messung vor Ort (Temperatur, Leitfähigkeit, pH, Sauerstoff) und im Labor (übrige Parameter). Erfassung: Eintragen der Messwerte in Excel-Tabelle; Einlesen der Messwerte in Datenbank (Limsophy).
+
+Methoden gemäss Metadaten: pH-Wert mit WTW Multi 350i pH-Elektrode; Sauerstoff O2 und Sauerstoffsättigung mit WTW Multi 350i elektrochemisch; gelöster organischer Kohlenstoff DOC mit DOC/TOC-Analyser; Nitrat, Chlorid, Sulfat, Calcium, Magnesium, Natrium und Kalium mit Ionen-Chromatographie; Schwermetalle mit ICP/MS; Mikroverunreinigungen mit LC-MS/MS; flüchtige organische Verbindungen VOC mit GC-MS.</surveyMethod>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>jahr</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Jahr der Messung beziehungsweise des Messblatts.</base:description>
+            <base:unit>Jahr</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>monat</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Monat der Messung als Zahl. Mai wird als 5 und November als 11 geführt. Für 2003 und 2004 ist der Monat in der Ausgangsdatei nicht pro Messwert ausgewiesen und bleibt deshalb leer.</base:description>
+            <base:unit>Monat</base:unit>
+            <base:mandatory>false</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>messstelle_code</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Stabiler Messstellen-Code, soweit aus den Metadaten ableitbar, z.B. SOG11 oder SOQ04.</base:description>
+            <base:mandatory>false</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>messstelle_nr</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Messstellennummer gemäss ursprünglichem Excel-Blatt. Die Nummer ist jahres-/tabellenbezogen und weniger stabil als der Messstellen-Code.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>gemeinde</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Gemeinde der Messstelle.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>messstelle_name</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Name oder Bezeichnung der Messstelle, z.B. Pumpwerk oder Quelle.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>parameter</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Untersuchter Parameter oder Stoff, z.B. Nitrat, Cadmium, DOC oder Sauerstoffsättigung.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>parameter_code</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Chemische Kurzbezeichnung oder Code des Parameters, soweit in der Ausgangsdatei vorhanden.</base:description>
+            <base:mandatory>false</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>einheit</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Einheit des Messwerts. Bei pH-Wert ist keine Einheit angegeben.</base:description>
+            <base:mandatory>false</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>messwert</base:name>
+            <base:dataType>DECIMAL</base:dataType>
+            <base:description>Numerischer Messwert. Werte aus der Ausgangsdatei mit vorangestelltem Kleiner-als-Zeichen werden als Zahlenwert der Nachweisgrenze geführt. Nicht vorhandene Werte, der Code 190 und nn werden als NULL geführt.</base:description>
+            <base:unit>parameterabhängig</base:unit>
+            <base:mandatory>false</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>ist_unter_nachweisgrenze</base:name>
+            <base:dataType>BOOLEAN</base:dataType>
+            <base:description>true, wenn der Ausgangswert als kleiner als die Nachweisgrenze angegeben war, z.B. &lt;0.005. Der Messwert enthält dann den Schwellenwert ohne Kleiner-als-Zeichen.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>messwert_status</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Status des Messwerts nach der Umstrukturierung. Verwendete Werte: gemessen, unter_nachweisgrenze, nicht_gemessen, nicht_nachweisbar.</base:description>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>grenzwert</base:name>
+            <base:dataType>DECIMAL</base:dataType>
+            <base:description>Grenzwert oder Qualitätsanforderung, soweit für den Parameter gemäss Ausgangsdatei vorhanden.</base:description>
+            <base:unit>parameterabhängig</base:unit>
+            <base:mandatory>false</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>grenzwert_einheit</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Einheit des Grenzwerts, soweit ein Grenzwert vorhanden ist.</base:description>
+            <base:mandatory>false</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>grenzwert_rechtsgrundlage</base:name>
+            <base:dataType>TEXT</base:dataType>
+            <base:description>Rechtsgrundlage des Grenzwerts beziehungsweise der Qualitätsanforderung, z.B. GSchV.</base:description>
+            <base:mandatory>false</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <model>CSV long/tidy; Semikolon-getrennt; UTF-8; eine Zeile pro Jahr, Monat, Messstelle und Parameter</model>
+        <dataAvailableFrom>ab 1998 gemäss Metadaten; in der gelieferten Datei 2003 bis 2024</dataAvailableFrom>
+        <furtherUses>Die Untersuchungen werden im Rahmen der Nationalen Grundwasserbeobachtung NAQUA durchgeführt. Die Messdaten werden halbjährlich an das BAFU weitergeleitet und dienen als Grundlage für Grundwasserschutzmassnahmen sowie für Auswertungen zur Wasserqualität.</furtherUses>
+        <remarks>Das Datenblatt beschreibt die aus WaGr_Analyse.xlsx erzeugte long/tidy CSV-Datei wasserqualitaet_grundwasser_messwerte_long.csv. Die ursprünglichen Jahresblätter wurden aus Kreuztabellen in eine maschinenlesbare Struktur überführt. Der Datensatz wird als einzelner laufend ergänzter Datensatz beschrieben, nicht als DatasetSeries.
+
+Die gelieferte CSV enthält 21418 Zeilen, 22 Jahre (2003–2024), 21 Messstellen-Kombinationen und 50 Parameter-/Einheit-Kombinationen. Statusverteilung: gemessen 7595, unter_nachweisgrenze 12003, nicht_gemessen 1632, nicht_nachweisbar 188.
+
+Umformungsregeln: Werte wie &lt;0.005 wurden zu messwert=0.005 und ist_unter_nachweisgrenze=true umgewandelt. Der ursprüngliche Code 190 sowie leere Zellen werden als NULL in messwert geführt. Das Attribut messwert_original ist gemäss Auftrag nicht enthalten. Für 2003 und 2004 ist kein Monat pro Messwert ausgewiesen; monat bleibt dort NULL.
+
+Nutzungsbedingung gemäss Metadaten: nicht-kommerzielle und kommerzielle Nutzung mit Quellenangabe erlaubt. Grenzwerte und Anforderungen beziehen sich gemäss Metadaten auf die Gewässerschutzverordnung (GSchV). Dieses automatisch erzeugte Datenblatt sollte vor der Publikation fachlich geprüft werden.</remarks>
+      </Dataset>
+    </Metadata>
+  </ili:datasection>
+</ili:transfer>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ili:transfer xmlns="http://www.interlis.ch/xtf/2.4/SO_AGI_DataCatalog_Datasheet_20260523" xmlns:base="http://www.interlis.ch/xtf/2.4/SO_AGI_DataCatalog_Base_20260529" xmlns:ili="http://www.interlis.ch/xtf/2.4/INTERLIS">
+  <ili:headersection>
+    <ili:models>
+      <ili:model>SO_AGI_DataCatalog_Datasheet_20260523</ili:model>
+      <ili:model>SO_AGI_DataCatalog_Base_20260529</ili:model>
+    </ili:models>
+    <ili:sender>ChatGPT</ili:sender>
+    <ili:comment>Aus so_bevo_altersstruktur_2025.xlsx erzeugt: Blatt Metadaten und Daten; Klasse Metadata.DatasetSeries, Issue 2025.</ili:comment>
+  </ili:headersection>
+  <ili:datasection>
+    <Metadata ili:bid="x1">
+      <DatasetSeries ili:tid="ch.so.bevoelkerung.altersstruktur">
+        <identifier>ch.so.bevoelkerung.altersstruktur</identifier>
+        <title>Altersstruktur der Wohnbevölkerung nach Geschlecht (Schweizer/Ausländer)</title>
+        <description>Altersstruktur der Wohnbevölkerung nach Geschlecht (Schweizer/Ausländer) im Kanton Solothurn. Stichtag: 31.12.2025. Quelle: Einwohnerregister Kanton Solothurn. Beobachtungseinheit: Jahrgang (Einzeljahre). Die Ausgabe 2025 enthält Jahrgänge von 1920 bis 2025.</description>
+        <accessLevel>open</accessLevel>
+        <publicationStatus>published</publicationStatus>
+        <publisherRef>ch.so.agi</publisherRef>
+        <creatorRef>ch.so.afin</creatorRef>
+        <contactPoint>
+          <base:ContactPoint>
+            <base:name>Amt für Finanzen, Statistik (AFIN)</base:name>
+            <base:organizationUnit>Statistik</base:organizationUnit>
+            <base:email>mailto:statistik@fd.so.ch</base:email>
+            <base:officeAtWeb>https://so.ch/verwaltung/finanzdepartement/amt-fuer-finanzen/statistikportal/</base:officeAtWeb>
+          </base:ContactPoint>
+        </contactPoint>
+        <themes>Bevoelkerung</themes>
+        <keywords>Altersstruktur</keywords>
+        <keywords>Wohnbevölkerung</keywords>
+        <keywords>Bevölkerung</keywords>
+        <keywords>Geschlecht</keywords>
+        <keywords>Staatsangehörigkeit</keywords>
+        <keywords>Jahrgang</keywords>
+        <accrualPeriodicity>annually</accrualPeriodicity>
+        <modified>2025-12-31</modified>
+        <temporalCoverage>
+          <base:TemporalCoverage>
+            <base:referenceDate>2025-12-31</base:referenceDate>
+          </base:TemporalCoverage>
+        </temporalCoverage>
+        <surveyMethod>Quelle: Einwohnerregister Kanton Solothurn
+Beobachtungseinheit: Jahrgang (Einzeljahre)
+Stichtag: 31.12.2025</surveyMethod>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Jahrgang</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Geburtsjahr</base:description>
+            <base:unit>Jahr</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Auslaender</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Männer ausländische Staatsangehörigkeit</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Auslaenderinnen</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Frauen ausländische Staatsangehörigkeit</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Schweizer</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Männer Schweizer Staatsangehörigkeit</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Schweizerinnen</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Frauen Schweizer Staatsangehörigkeit</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <attributes>
+          <base:DatasetAttribute>
+            <base:name>Total</base:name>
+            <base:dataType>INTEGER</base:dataType>
+            <base:description>Gesamtbevölkerung</base:description>
+            <base:unit>Personen</base:unit>
+            <base:mandatory>true</base:mandatory>
+          </base:DatasetAttribute>
+        </attributes>
+        <dataAvailableFrom>2025</dataAvailableFrom>
+        <furtherUses>Die Daten können für Bevölkerungsstatistik, Altersstrukturanalysen und Planungsgrundlagen verwendet werden.</furtherUses>
+        <remarks>Die Spaltenbeschreibungen stammen aus dem Blatt Metadaten. Die Datentabelle enthält 106 Jahrgänge (1920–2025).</remarks>
+        <issues>
+          <DatasetIssue>
+            <identifier>ch.so.bevoelkerung.altersstruktur_2025</identifier>
+            <title>Altersstruktur der Wohnbevölkerung nach Geschlecht (Schweizer/Ausländer) 2025</title>
+            <description>Ausgabe 2025 der DatasetSeries. Stichtag: 31.12.2025. Publikationsjahr: 2026.</description>
+            <issueLabel>2025</issueLabel>
+            <isCurrentIssue>true</isCurrentIssue>
+            <accessLevel>open</accessLevel>
+            <publicationStatus>published</publicationStatus>
+            <accrualPeriodicity>annually</accrualPeriodicity>
+            <modified>2025-12-31</modified>
+            <temporalCoverage>
+              <base:TemporalCoverage>
+                <base:referenceDate>2025-12-31</base:referenceDate>
+              </base:TemporalCoverage>
+            </temporalCoverage>
+            <surveyMethod>Quelle: Einwohnerregister Kanton Solothurn
+Beobachtungseinheit: Jahrgang (Einzeljahre)
+Stichtag: 31.12.2025</surveyMethod>
+            <dataAvailableFrom>1920</dataAvailableFrom>
+            <auxiliaryData>Einwohnerregister Kanton Solothurn</auxiliaryData>
+            <remarks>Issue 2025; Attribute sind gemäss Auftrag nur bei der DatasetSeries aufgeführt.</remarks>
+          </DatasetIssue>
+        </issues>
+      </DatasetSeries>
+    </Metadata>
+  </ili:datasection>
+</ili:transfer>

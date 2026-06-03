@@ -1,0 +1,29 @@
+Manifest-Version: 1.0
+Created-By: Maven Archiver 3.6.6
+Java-Version: 21
+Build-Jdk-Spec: 25
+Specification-Title: GRETL Datenportal Jobs
+Specification-Version: 0.1
+Implementation-Title: GRETL Datenportal Jobs
+Implementation-Version: 0.1.0-SNAPSHOT
+Group-Id: ch.so.agi.jenkins
+Artifact-Id: jenkins-gretl-datenportal-plugin
+Short-Name: jenkins-gretl-datenportal-plugin
+Long-Name: GRETL Datenportal Jobs
+Url: https://github.com/sogis/jenkins-gretl-datenportal-plugin
+Compatible-Since-Version: 0.1.0
+Plugin-Version: 0.1.0-SNAPSHOT (private-f913f69b-stefan)
+Hudson-Version: 2.555.2
+Jenkins-Version: 2.555.2
+Plugin-Dependencies: file-parameters:425.v3fa_801681b_5e,snakeyaml-api:2
+ .5-149.v72471e9c6371,workflow-cps:4331.v9d06ed4658ff,workflow-job:1571.
+ 1580.v18e46842c125,email-ext:1933.v45cec755423f;resolution:=optional
+Plugin-Developers: Amt fuer Geoinformation Kanton Solothurn:sogis:
+Plugin-License-Name: MIT License
+Plugin-License-Url: https://opensource.org/licenses/MIT
+Plugin-ScmConnection: scm:git:https://github.com/sogis/jenkins-gretl-dat
+ enportal-plugin.git
+Plugin-ScmTag: HEAD
+Plugin-ScmUrl: https://github.com/sogis/jenkins-gretl-datenportal-plugin
+Implementation-Build: f913f69b9edd31d7ad98fde53be2f9eb6ae2a475
+

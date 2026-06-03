@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Created-By: Maven Archiver 3.6.6
+Java-Version: 17
+Build-Jdk-Spec: 21
+Specification-Title: Jackson Annotations 2 API Plugin
+Specification-Version: 2.22
+Implementation-Title: Jackson Annotations 2 API Plugin
+Implementation-Version: 2.22-19.v10a_a_582ea_26e
+Group-Id: io.jenkins.plugins
+Artifact-Id: jackson-annotations2-api
+Short-Name: jackson-annotations2-api
+Long-Name: Jackson Annotations 2 API Plugin
+Url: https://github.com/jenkinsci/jackson-annotations2-api-plugin
+Plugin-Version: 2.22-19.v10a_a_582ea_26e
+Hudson-Version: 2.479.1
+Jenkins-Version: 2.479.1
+Plugin-Developers: 
+Support-Dynamic-Loading: true
+Plugin-License-Name: The Apache Software License, Version 2.0
+Plugin-License-Url: https://www.apache.org/licenses/LICENSE-2.0.txt
+Plugin-ScmConnection: scm:git:https://github.com/jenkinsci/jackson-annot
+ ations2-api-plugin
+Plugin-ScmTag: 10aa582ea26e5827b3acdfdbc27a9dfc773f4ba7
+Plugin-ScmUrl: https://github.com/jenkinsci/jackson-annotations2-api-plu
+ gin
+Implementation-Build: 10aa582ea26e5827b3acdfdbc27a9dfc773f4ba7
+

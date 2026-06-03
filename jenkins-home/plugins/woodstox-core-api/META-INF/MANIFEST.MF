@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Created-By: Maven Archiver 3.6.6
+Java-Version: 17
+Build-Jdk-Spec: 21
+Specification-Title: Woodstox Core API Plugin
+Specification-Version: 7.1
+Implementation-Title: Woodstox Core API Plugin
+Implementation-Version: 7.1.1-1.v4d297985f397
+Group-Id: io.jenkins.plugins
+Artifact-Id: woodstox-core-api
+Short-Name: woodstox-core-api
+Long-Name: Woodstox Core API Plugin
+Url: https://github.com/jenkinsci/woodstox-core-api-plugin
+Plugin-Version: 7.1.1-1.v4d297985f397
+Hudson-Version: 2.479.1
+Jenkins-Version: 2.479.1
+Plugin-Developers: 
+Support-Dynamic-Loading: true
+Plugin-License-Name: Apache License, Version 2.0
+Plugin-License-Url: https://opensource.org/license/apache-2.0/
+Plugin-ScmConnection: scm:git:https://github.com/jenkinsci/woodstox-core
+ -api-plugin
+Plugin-ScmTag: 4d297985f39740724324d9c0c1a1cbf03f892043
+Plugin-ScmUrl: https://github.com/jenkinsci/woodstox-core-api-plugin
+Implementation-Build: 4d297985f39740724324d9c0c1a1cbf03f892043
+

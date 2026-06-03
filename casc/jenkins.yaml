@@ -1,0 +1,43 @@
+jenkins:
+  systemMessage: "Local GRETL Datenportal Jenkins"
+  numExecutors: 2
+  mode: NORMAL
+  scmCheckoutRetryCount: 1
+
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "admin"
+
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  location:
+    url: "http://localhost:8080/"
+    adminAddress: "Local Jenkins <noreply@localhost>"
+  gretlDatenportalJobs:
+    displayName: "GRETL Datenportal Jobs"
+    urlName: "gretl-datenportal"
+    topicRepositoryUrl: "${THEMEN_REPO_URL}"
+    topicRepositoryBranch: "${THEMEN_REPO_BRANCH}"
+    topicRepositoryPath: ""
+
+jobs:
+  - script: |
+      job('gretl-datenportal-plugin-generator-local') {
+        description('Generates GRETL Datenportal Pipeline jobs using the Java plugin BuildStep and the local themes repository')
+        logRotator(-1, 10)
+        steps {
+          configure { project ->
+            project / builders << 'ch.so.agi.jenkins.gretldatenportal.GretlDatenportalSeedBuilder' {
+              topicRepositoryUrl('${THEMEN_REPO_URL}')
+              topicRepositoryBranch('${THEMEN_REPO_BRANCH}')
+              topicRepositoryPath('')
+            }
+          }
+        }
+      }

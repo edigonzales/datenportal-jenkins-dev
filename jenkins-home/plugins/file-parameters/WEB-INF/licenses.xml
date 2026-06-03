@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<l:dependencies xmlns:l='licenses' groupId='io.jenkins.plugins' artifactId='file-parameters' version='425.v3fa_801681b_5e'><l:dependency name='File Parameter Plugin' groupId='io.jenkins.plugins' artifactId='file-parameters' version='425.v3fa_801681b_5e' url='https://github.com/jenkinsci/file-parameters-plugin'><l:description>The Jenkins Plugins Parent POM Project</l:description><l:license name='MIT License' url='https://opensource.org/licenses/MIT'/></l:dependency></l:dependencies>

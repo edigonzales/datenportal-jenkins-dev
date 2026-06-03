@@ -1,0 +1,136 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1571.1580.v18e46842c125">
+  <description>Lokaler Datenportal-Smoke-Test fuer Statistikdatensaetze.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>ORGANISATION</name>
+          <description>Organisationseinheit</description>
+          <defaultValue>statistikdienst</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>DATASET</name>
+          <description>Datensatz</description>
+          <choices>
+            <string>ch.so.statistik.bevoelkerung</string>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>ENVIRONMENT</name>
+          <description>Umgebung</description>
+          <choices>
+            <string>test</string>
+            <string>integration</string>
+            <string>production</string>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <io.jenkins.plugins.file__parameters.StashedFileParameterDefinition plugin="file-parameters@425.v3fa_801681b_5e">
+          <name>METADATA_FILE</name>
+        </io.jenkins.plugins.file__parameters.StashedFileParameterDefinition>
+        <io.jenkins.plugins.file__parameters.StashedFileParameterDefinition plugin="file-parameters@425.v3fa_801681b_5e">
+          <name>DATA_FILE</name>
+        </io.jenkins.plugins.file__parameters.StashedFileParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>DRY_RUN</name>
+          <description>Dry Run</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>COMMENT</name>
+          <description>Kommentar</description>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>CONFIRM_PRODUCTION</name>
+          <description>Production bestaetigen</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SERIES_ID</name>
+          <description>Serie</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@4331.v9d06ed4658ff">
+    <script>pipeline {
+    agent any
+
+    options {
+        timeout(time: 30, unit: &apos;MINUTES&apos;)
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage(&apos;Validate parameters&apos;) {
+            steps {
+                script {
+                    if (!(params.ORGANISATION ?: &apos;&apos;).trim()) {
+                        error(&apos;ORGANISATION muss gesetzt sein.&apos;)
+                    }
+                    if (!(params.DATASET ?: &apos;&apos;).trim()) {
+                        error(&apos;DATASET muss gesetzt sein.&apos;)
+                    }
+                    if (params.ENVIRONMENT == &apos;production&apos; &amp;&amp; params.CONFIRM_PRODUCTION != true) {
+                        error(&apos;CONFIRM_PRODUCTION muss fuer production gesetzt sein.&apos;)
+                    }
+                    currentBuild.displayName = &quot;#${env.BUILD_NUMBER} ${params.ORGANISATION} / ${params.DATASET}&quot;
+                    currentBuild.description = &quot;Lokale Datenportal-Demo: ${params.ORGANISATION} / ${params.DATASET}&quot;
+                }
+            }
+        }
+
+        stage(&apos;Inspect uploads&apos;) {
+            steps {
+                script {
+                    def metadataPresent = false
+                    def dataPresent = false
+
+                    try {
+                        withFileParameter(&apos;METADATA_FILE&apos;) {
+                            if (env.METADATA_FILE) {
+                                metadataPresent = true
+                                echo &quot;METADATA_FILE=${env.METADATA_FILE}&quot;
+                                echo &quot;METADATA_FILE_FILENAME=${env.METADATA_FILE_FILENAME}&quot;
+                            }
+                        }
+                    } catch (ignored) {
+                        echo &apos;No METADATA_FILE uploaded.&apos;
+                    }
+
+                    try {
+                        withFileParameter(&apos;DATA_FILE&apos;) {
+                            if (env.DATA_FILE) {
+                                dataPresent = true
+                                echo &quot;DATA_FILE=${env.DATA_FILE}&quot;
+                                echo &quot;DATA_FILE_FILENAME=${env.DATA_FILE_FILENAME}&quot;
+                            }
+                        }
+                    } catch (ignored) {
+                        echo &apos;No DATA_FILE uploaded.&apos;
+                    }
+
+                    if (!metadataPresent &amp;&amp; !dataPresent) {
+                        error(&apos;Mindestens METADATA_FILE oder DATA_FILE muss hochgeladen werden.&apos;)
+                    }
+
+                    echo &quot;ORGANISATION=${params.ORGANISATION}&quot;
+                    echo &quot;DATASET=${params.DATASET}&quot;
+                    echo &quot;ENVIRONMENT=${params.ENVIRONMENT}&quot;
+                    echo &quot;DRY_RUN=${params.DRY_RUN}&quot;
+                    echo &quot;COMMENT=${params.COMMENT}&quot;
+                }
+            }
+        }
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Created-By: Maven Archiver 3.6.5
+Java-Version: 17
+Build-Jdk-Spec: 21
+Specification-Title: File Parameter Plugin
+Specification-Version: 0.0
+Implementation-Title: File Parameter Plugin
+Implementation-Version: 425.v3fa_801681b_5e
+Group-Id: io.jenkins.plugins
+Artifact-Id: file-parameters
+Short-Name: file-parameters
+Long-Name: File Parameter Plugin
+Url: https://github.com/jenkinsci/file-parameters-plugin
+Plugin-Version: 425.v3fa_801681b_5e
+Hudson-Version: 2.479.3
+Jenkins-Version: 2.479.3
+Plugin-Dependencies: workflow-api:1373.v7b_813f10efa_b_,structs:350.v3b_
+ 30f09f2363
+Plugin-Developers: 
+Plugin-License-Name: MIT License
+Plugin-License-Url: https://opensource.org/licenses/MIT
+Plugin-ScmConnection: scm:git:https://github.com/jenkinsci/file-paramete
+ rs-plugin.git
+Plugin-ScmTag: 3fa801681b5e7cdf8e69ee57e9c85f5cfa7f7a2d
+Plugin-ScmUrl: https://github.com/jenkinsci/file-parameters-plugin
+Implementation-Build: 3fa801681b5e7cdf8e69ee57e9c85f5cfa7f7a2d
+
