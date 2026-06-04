@@ -1,0 +1,176 @@
+import groovy.json.JsonOutput
+
+plugins {
+    id 'base'
+}
+
+def configuredThemenRepoDir = findProperty('themenRepoDir') ?: System.getenv('THEMEN_REPO_DIR')
+def configuredOfflineBundleDir = findProperty('offlineBundleDir') ?: System.getenv('OFFLINE_BUNDLE_DIR')
+
+ext.themenRepoDir = file((configuredThemenRepoDir ?: '/Users/stefan/sources/datenportal-themenrepo').toString())
+ext.offlineBundleDir = file((configuredOfflineBundleDir ?: "${buildDir}/offline-bundle").toString())
+ext.offlineJarsDir = new File(offlineBundleDir, 'jars')
+ext.offlineGradleUserHomeDir = new File(offlineBundleDir, 'gradle-user-home')
+ext.resolvedManifestFile = new File(offlineBundleDir, 'resolved-manifest.json')
+ext.buildCoordinatesFile = new File(themenRepoDir, 'shared/gradle/gradle-build.properties')
+ext.wrapperPropertiesFile = new File(themenRepoDir, 'gradle/wrapper/gradle-wrapper.properties')
+ext.themenRepoWrapper = new File(themenRepoDir, 'gradlew')
+
+def loadProperties = { File sourceFile ->
+    if (!sourceFile.isFile()) {
+        throw new GradleException("Required file not found: ${sourceFile}")
+    }
+
+    def properties = new Properties()
+    sourceFile.withInputStream { properties.load(it) }
+    return properties
+}
+
+def readIndexedProperties = { Properties properties, String prefix ->
+    properties.stringPropertyNames()
+            .findAll { it.startsWith(prefix) }
+            .sort { left, right ->
+                Integer.parseInt(left.substring(prefix.length())) <=> Integer.parseInt(right.substring(prefix.length()))
+            }
+            .collect { properties.getProperty(it).toString().trim() }
+            .findAll { !it.isEmpty() }
+}
+
+def normalizeJarDependencyNotation = { String notation ->
+    def trimmedNotation = notation.trim()
+    if (trimmedNotation.endsWith('@pom')) {
+        return null
+    }
+    return trimmedNotation
+}
+
+def configureMavenRepository = { RepositoryHandler repositoryHandler, String repositoryUrl, int index ->
+    repositoryHandler.maven {
+        name = "datenportalRepo${index}"
+        url = uri(repositoryUrl)
+        if (repositoryUrl.startsWith('http://')) {
+            allowInsecureProtocol = true
+        }
+    }
+}
+
+def buildProperties = buildCoordinatesFile.isFile() ? loadProperties(buildCoordinatesFile) : new Properties()
+def repositoryUrls = (readIndexedProperties(buildProperties, 'datenportal.repository.plugin.')
+        + readIndexedProperties(buildProperties, 'datenportal.repository.project.'))
+        .unique()
+def requestedRuntimeDependencies = readIndexedProperties(buildProperties, 'datenportal.offline.seed.')
+        .collect { normalizeJarDependencyNotation(it) }
+        .findAll { it != null }
+
+configurations {
+    offlineRuntimeClasspath {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = true
+    }
+}
+
+repositories {
+    repositoryUrls.eachWithIndex { repositoryUrl, index ->
+        configureMavenRepository(repositories, repositoryUrl, index + 1)
+    }
+}
+
+dependencies {
+    requestedRuntimeDependencies.each { dependencyNotation ->
+        offlineRuntimeClasspath dependencyNotation
+    }
+}
+
+tasks.register('cleanOfflineBundle', Delete) {
+    delete offlineBundleDir
+}
+
+tasks.register('validateOfflineBundleInputs') {
+    doLast {
+        if (!themenRepoDir.isDirectory()) {
+            throw new GradleException("Themenrepo directory not found: ${themenRepoDir}")
+        }
+        if (!new File(themenRepoDir, '.git').exists()) {
+            throw new GradleException("Themenrepo is not a Git repository: ${themenRepoDir}")
+        }
+        loadProperties(buildCoordinatesFile)
+        loadProperties(wrapperPropertiesFile)
+        if (!themenRepoWrapper.isFile()) {
+            throw new GradleException("Gradle wrapper not found in Themenrepo: ${themenRepoWrapper}")
+        }
+        if (requestedRuntimeDependencies.isEmpty()) {
+            throw new GradleException("No offline runtime dependencies configured in ${buildCoordinatesFile}")
+        }
+    }
+}
+
+tasks.register('stageOfflineJars', Copy) {
+    dependsOn 'validateOfflineBundleInputs'
+    from configurations.offlineRuntimeClasspath
+    into offlineJarsDir
+
+    doFirst {
+        delete offlineJarsDir
+    }
+}
+
+tasks.register('prepareWrapperDistribution') {
+    dependsOn 'validateOfflineBundleInputs'
+    inputs.file wrapperPropertiesFile
+    outputs.dir new File(offlineGradleUserHomeDir, 'wrapper/dists')
+
+    doLast {
+        offlineGradleUserHomeDir.mkdirs()
+        exec {
+            workingDir themenRepoDir
+            environment 'GRADLE_USER_HOME', offlineGradleUserHomeDir.absolutePath
+            commandLine themenRepoWrapper.absolutePath, '--version'
+        }
+    }
+}
+
+tasks.register('writeResolvedManifest') {
+    dependsOn 'stageOfflineJars', 'prepareWrapperDistribution'
+    outputs.file resolvedManifestFile
+    outputs.upToDateWhen { false }
+
+    doLast {
+        def resolvedComponents = configurations.offlineRuntimeClasspath.incoming.resolutionResult.allComponents
+                .collect { component ->
+                    component.moduleVersion == null ? component.id.displayName : [
+                            group  : component.moduleVersion.group,
+                            name   : component.moduleVersion.name,
+                            version: component.moduleVersion.version
+                    ]
+                }
+                .sort { left, right -> left.toString() <=> right.toString() }
+
+        def stagedJars = offlineJarsDir.listFiles()
+                ?.findAll { it.isFile() && it.name.endsWith('.jar') }
+                ?.collect { it.name }
+                ?.sort() ?: []
+
+        def wrapperProperties = loadProperties(wrapperPropertiesFile)
+        def manifest = [
+                createdAtUtc             : new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone('UTC')),
+                themenRepoDir            : themenRepoDir.absolutePath,
+                sourceCoordinatesFile    : buildCoordinatesFile.absolutePath,
+                gradleDistributionUrl    : wrapperProperties.getProperty('distributionUrl'),
+                requestedRuntimeDependencies: requestedRuntimeDependencies,
+                resolvedComponents       : resolvedComponents,
+                stagedJars               : stagedJars,
+                offlineJarsDir           : offlineJarsDir.absolutePath,
+                offlineGradleUserHomeDir : offlineGradleUserHomeDir.absolutePath
+        ]
+
+        offlineBundleDir.mkdirs()
+        resolvedManifestFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(manifest)) + System.lineSeparator()
+    }
+}
+
+tasks.register('prepareOfflineBundle') {
+    dependsOn 'writeResolvedManifest'
+    group = 'datenportal'
+    description = 'Builds the GRETL-style offline bundle with resolved jars and a warmed Gradle wrapper cache.'
+}
