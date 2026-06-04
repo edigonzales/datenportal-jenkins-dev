@@ -58,6 +58,33 @@ Das erzeugt standardmaessig:
 `resolved-manifest.json` dokumentiert die effektiv aufgeloesten und gestagten
 Plugin- und Runtime-Jars.
 
+### Wie der Offline-Gradle-Start funktioniert
+
+Das Offline-Bundle besteht bewusst aus zwei verschiedenen Teilen:
+
+- `build/offline-bundle/gradle-user-home`
+- `build/offline-bundle/jars`
+
+Rollen:
+
+- `gradle-user-home` enthaelt die vom Themenrepo-Wrapper benoetigte
+  Gradle-Distribution und die zugehoerigen Wrapper-Caches.
+- `jars` enthaelt die offline vorbereiteten Plugin- und Runtime-Jars.
+
+Der Laufzeitvertrag ist:
+
+1. Jenkins checkt das Themenrepo aus.
+2. `shared/Jenkinsfile` startet im Repo-Root `./gradlew`.
+3. Der Wrapper sucht seine Distribution unter `GRADLE_USER_HOME/wrapper/dists`.
+4. `shared/gradle/init.gradle` bindet `DATENPORTAL_OFFLINE_JARS_DIR` fuer
+   `initscript` und `pluginManagement` ein.
+
+Wichtig:
+
+- Das Image ersetzt den Wrapper nicht durch ein global installiertes `gradle`.
+- Der Wrapper bleibt der Launcher.
+- `build-offline-bundle.sh` waermt den benoetigten Wrapper-Cache gezielt vor.
+
 ## Jenkins lokal starten
 
 ```bash
@@ -83,6 +110,44 @@ Login:
 ```text
 admin / admin
 ```
+
+## Maintainer-Workflow nach Plugin-Aenderungen
+
+Wenn sich das Jenkins-Plugin in
+`/Users/stefan/sources/jenkins-gretl-datenportal-plugin` geaendert hat, ist der
+volle lokale Ablauf:
+
+1. Plugin-HPI neu bauen.
+2. HPI in die lokale Jenkins-Installation kopieren.
+3. Jenkins neu starten.
+4. Seed-Job erneut ausfuehren.
+5. Datenportal-UI oeffnen und einen generierten Job starten.
+
+```bash
+cd /Users/stefan/sources/jenkins-gretl-datenportal-plugin
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk use java 21.0.10-tem
+mvn -ntp package
+
+cd /Users/stefan/sources/datenportal-jenkins-dev
+./bin/install-gretl-datenportal-plugin.sh
+./bin/start.sh
+```
+
+Dann in Jenkins:
+
+1. `gretl-datenportal-plugin-generator-local` ausfuehren.
+2. `/gretl-datenportal` oeffnen.
+3. Einen Datensatz auswaehlen.
+4. Mindestens `METADATA_FILE` oder `DATA_FILE` hochladen.
+5. Den Job starten.
+
+Hinweise:
+
+- Wenn Jenkins schon laeuft, reicht das Ueberschreiben der `.jpi` nicht; ein
+  Restart ist notwendig.
+- Der Seed-Lauf ist noetig, damit bestehende generierte Jobs neue
+  Pipeline-Inhalte oder neue Plugin-Logik uebernehmen.
 
 ## Docker-Image bauen
 
