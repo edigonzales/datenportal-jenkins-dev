@@ -16,14 +16,13 @@
         <description>Altersstruktur der Wohnbevölkerung nach Geschlecht (Schweizer/Ausländer) im Kanton Solothurn. Stichtag: 31.12.2025. Quelle: Einwohnerregister Kanton Solothurn. Beobachtungseinheit: Jahrgang (Einzeljahre). Die Ausgabe 2025 enthält Jahrgänge von 1920 bis 2025.</description>
         <accessLevel>open</accessLevel>
         <publicationStatus>published</publicationStatus>
-        <publisherRef>ch.so.agi</publisherRef>
         <creatorRef>ch.so.afin</creatorRef>
         <contactPoint>
           <base:ContactPoint>
             <base:name>Amt für Finanzen, Statistik (AFIN)</base:name>
             <base:organizationUnit>Statistik</base:organizationUnit>
             <base:email>mailto:statistik@fd.so.ch</base:email>
-            <base:officeAtWeb>https://so.ch/verwaltung/finanzdepartement/amt-fuer-finanzen/statistikportal/</base:officeAtWeb>
+            <base:url>https://so.ch/verwaltung/finanzdepartement/amt-fuer-finanzen/statistikportal/</base:url>
           </base:ContactPoint>
         </contactPoint>
         <themes>Bevoelkerung</themes>
@@ -36,9 +35,9 @@
         <accrualPeriodicity>annually</accrualPeriodicity>
         <modified>2025-12-31</modified>
         <temporalCoverage>
-          <base:TemporalCoverage>
+          <ClosedTemporalCoverage>
             <base:referenceDate>2025-12-31</base:referenceDate>
-          </base:TemporalCoverage>
+          </ClosedTemporalCoverage>
         </temporalCoverage>
         <surveyMethod>Quelle: Einwohnerregister Kanton Solothurn
 Beobachtungseinheit: Jahrgang (Einzeljahre)
@@ -107,14 +106,13 @@ Stichtag: 31.12.2025</surveyMethod>
             <description>Ausgabe 2025 der DatasetSeries. Stichtag: 31.12.2025. Publikationsjahr: 2026.</description>
             <issueLabel>2025</issueLabel>
             <isCurrentIssue>true</isCurrentIssue>
-            <accessLevel>open</accessLevel>
             <publicationStatus>published</publicationStatus>
             <accrualPeriodicity>annually</accrualPeriodicity>
             <modified>2025-12-31</modified>
             <temporalCoverage>
-              <base:TemporalCoverage>
+              <ClosedTemporalCoverage>
                 <base:referenceDate>2025-12-31</base:referenceDate>
-              </base:TemporalCoverage>
+              </ClosedTemporalCoverage>
             </temporalCoverage>
             <surveyMethod>Quelle: Einwohnerregister Kanton Solothurn
 Beobachtungseinheit: Jahrgang (Einzeljahre)
