@@ -123,3 +123,6 @@ jenkins-home/jobs/
 jenkins-home/gretl-datenportal/
 jenkins-home/plugins/*.bak
 jenkins-home/queue.xml
+jenkins-home/queue.xml.bak
+jenkins-home/users/
+jenkins-home/plugins/jenkins-gretl-datenportal-plugin/
