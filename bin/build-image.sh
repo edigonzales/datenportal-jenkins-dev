@@ -10,7 +10,7 @@ OFFLINE_BUNDLE_DIR="${OFFLINE_BUNDLE_DIR:-$ROOT_DIR/build/offline-bundle}"
 DOCKER_CONTEXT_DIR="$ROOT_DIR/build/docker-context"
 IMAGE_NAME="${IMAGE_NAME:-datenportal-jenkins-dev:local}"
 JENKINS_VERSION="${JENKINS_VERSION:-2.555.2}"
-JENKINS_IMAGE="${JENKINS_IMAGE:-jenkins/jenkins:lts-jdk17}"
+JENKINS_IMAGE="${JENKINS_IMAGE:-jenkins/jenkins:${JENKINS_VERSION}-lts}"
 
 command -v docker >/dev/null || { echo "Docker fehlt."; exit 1; }
 command -v rsync >/dev/null || { echo "rsync fehlt."; exit 1; }

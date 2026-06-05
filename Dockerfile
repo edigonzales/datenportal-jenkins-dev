@@ -1,9 +1,21 @@
-ARG JENKINS_IMAGE=jenkins/jenkins:lts-jdk17
+ARG JENKINS_IMAGE=jenkins/jenkins:lts-jdk21
 FROM ${JENKINS_IMAGE}
+
+ARG TARGETARCH
 
 USER root
 
-RUN mkdir -p /opt/datenportal \
+RUN case "$TARGETARCH" in \
+      amd64) adoptium_arch='x64' ;; \
+      arm64) adoptium_arch='aarch64' ;; \
+      *) echo "Unsupported TARGETARCH: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && mkdir -p /opt/java \
+    && curl -fsSL -o /tmp/temurin17.tar.gz "https://api.adoptium.net/v3/binary/latest/17/ga/linux/${adoptium_arch}/jdk/hotspot/normal/eclipse" \
+    && mkdir -p /opt/java/openjdk17 \
+    && tar -xzf /tmp/temurin17.tar.gz --strip-components=1 -C /opt/java/openjdk17 \
+    && rm /tmp/temurin17.tar.gz \
+    && mkdir -p /opt/datenportal \
     /usr/share/jenkins/ref/casc_configs \
     /usr/share/jenkins/ref/plugins
 
@@ -24,4 +36,5 @@ ENV CASC_JENKINS_CONFIG=/usr/share/jenkins/ref/casc_configs/jenkins.yaml \
     THEMEN_REPO_BRANCH=main \
     DATENPORTAL_OFFLINE_JARS_DIR=/opt/datenportal/offline-bundle/jars \
     GRADLE_USER_HOME=/opt/datenportal/offline-bundle/gradle-user-home \
+    GRADLE_JAVA_HOME_17=/opt/java/openjdk17 \
     JAVA_OPTS=-Djenkins.install.runSetupWizard=false

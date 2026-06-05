@@ -14,50 +14,17 @@ PLUGIN_MANAGER_VERSION="${PLUGIN_MANAGER_VERSION:-2.14.0}"
 THEMEN_REPO_DIR="${THEMEN_REPO_DIR:-/Users/stefan/sources/datenportal-themenrepo}"
 THEMEN_REPO_URL="${THEMEN_REPO_URL:-file://$THEMEN_REPO_DIR}"
 THEMEN_REPO_BRANCH="${THEMEN_REPO_BRANCH:-main}"
-
-java_major_version() {
-  java -version 2>&1 | awk -F'[\".]' '/version/ {print $2; exit}'
-}
-
-ensure_java17() {
-  local detected_major
-  detected_major="$(java_major_version)"
-
-  if [ "$detected_major" != "17" ]; then
-    if command -v /usr/libexec/java_home >/dev/null 2>&1; then
-      local java17_home
-      java17_home="$(/usr/libexec/java_home -v 17 2>/dev/null || true)"
-      if [ -n "$java17_home" ]; then
-        export JAVA_HOME="$java17_home"
-        export PATH="$JAVA_HOME/bin:$PATH"
-        detected_major="$(java_major_version)"
-      fi
-    fi
-  fi
-
-  if [ "$detected_major" != "17" ]; then
-    local sdkman_java17_home
-    sdkman_java17_home="$(ls -d "$HOME"/.sdkman/candidates/java/17* 2>/dev/null | head -n 1 || true)"
-    if [ -n "$sdkman_java17_home" ]; then
-      export JAVA_HOME="$sdkman_java17_home"
-      export PATH="$JAVA_HOME/bin:$PATH"
-      detected_major="$(java_major_version)"
-    fi
-  fi
-
-  if [ "$detected_major" != "17" ]; then
-    echo "GRETL/Gradle benoetigt Java 17. Setze JAVA_HOME auf Java 17." >&2
-    exit 1
-  fi
-}
+source "$ROOT_DIR/bin/java-env.sh"
 
 mkdir -p "$DOWNLOADS_DIR" "$JENKINS_HOME_DIR/plugins"
 
-command -v java >/dev/null || { echo "Java fehlt. Bitte Java 17 installieren."; exit 1; }
 command -v git >/dev/null || { echo "Git fehlt."; exit 1; }
 command -v curl >/dev/null || { echo "curl fehlt."; exit 1; }
 
-ensure_java17
+JAVA17_HOME="$(resolve_java_home 17 JAVA17_HOME "Java 17 fuer GRETL/Gradle")"
+JAVA21_HOME="$(resolve_java_home 21 JAVA21_HOME "Java 21 fuer Jenkins")"
+export JAVA17_HOME JAVA21_HOME
+export GRADLE_JAVA_HOME_17="$JAVA17_HOME"
 
 if [ ! -d "$THEMEN_REPO_DIR/.git" ]; then
   echo "Themenrepo nicht gefunden oder kein Git-Repo: $THEMEN_REPO_DIR" >&2
@@ -66,6 +33,8 @@ fi
 
 echo "Baue/Aktualisiere Offline-Bundle..."
 "$ROOT_DIR/bin/build-offline-bundle.sh" "$OFFLINE_BUNDLE_DIR"
+
+activate_java_home "$JAVA21_HOME"
 
 if [ ! -f "$JENKINS_WAR" ]; then
   echo "Downloading Jenkins WAR..."
@@ -108,6 +77,8 @@ echo "Themes repo: $THEMEN_REPO_URL"
 echo "Branch:      $THEMEN_REPO_BRANCH"
 echo "Offline jars: $DATENPORTAL_OFFLINE_JARS_DIR"
 echo "Gradle home:  $GRADLE_USER_HOME"
+echo "Gradle Java:  $GRADLE_JAVA_HOME_17"
+echo "Jenkins Java: $JAVA_HOME"
 echo
 
 exec java "${java_opts[@]}" -jar "$JENKINS_WAR" --httpPort=8080

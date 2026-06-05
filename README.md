@@ -20,17 +20,23 @@ und Image-Bau, nicht den Wartungs-Workflow des Gradle-Build-Contracts.
 
 ## Voraussetzungen
 
-- Java 17 fuer Jenkins und GRETL/Gradle
+- Java 21 fuer Jenkins und den Jenkins-Plugin-Build
+- Java 17 fuer GRETL/Gradle und das Offline-Bundle
 - Maven nur fuer den Jenkins-Plugin-Build
 - Git
 - curl
 - Docker nur fuer den Image-Build
 
+Optionale lokale Overrides:
+
+- `JAVA21_HOME` fuer den Jenkins-Controller
+- `JAVA17_HOME` fuer GRETL/Gradle
+
 ## Plugin bauen
 
 ```bash
 cd /Users/stefan/sources/jenkins-gretl-datenportal-plugin
-export JAVA_HOME="$HOME/.sdkman/candidates/java/17.0.10-tem"
+export JAVA_HOME="$HOME/.sdkman/candidates/java/21.0.10-tem"
 export PATH="$JAVA_HOME/bin:$PATH"
 mvn -ntp package
 ```
@@ -74,7 +80,7 @@ Rollen:
 Der Laufzeitvertrag ist:
 
 1. Jenkins checkt das Themenrepo aus.
-2. `shared/Jenkinsfile` startet im Repo-Root `./gradlew`.
+2. `shared/Jenkinsfile` startet im Repo-Root `shared/bin/gradlew-java17.sh`.
 3. Der Wrapper sucht seine Distribution unter `GRADLE_USER_HOME/wrapper/dists`.
 4. `shared/gradle/init.gradle` bindet `DATENPORTAL_OFFLINE_JARS_DIR` fuer
    `initscript` und `pluginManagement` ein.
@@ -82,7 +88,8 @@ Der Laufzeitvertrag ist:
 Wichtig:
 
 - Das Image ersetzt den Wrapper nicht durch ein global installiertes `gradle`.
-- Der Wrapper bleibt der Launcher.
+- Der Wrapper bleibt der Launcher; Jenkins ruft ihn explizit ueber den
+  Java-17-Wrapper `shared/bin/gradlew-java17.sh` auf.
 - `build-offline-bundle.sh` waermt den benoetigten Wrapper-Cache gezielt vor.
 
 ## Jenkins lokal starten
@@ -92,12 +99,17 @@ cd /Users/stefan/sources/datenportal-jenkins-dev
 ./bin/start.sh
 ```
 
-`start.sh` baut oder aktualisiert zuerst das Offline-Bundle und exportiert dann:
+`start.sh` loest zuerst Java 17 fuer GRETL/Gradle und Java 21 fuer Jenkins auf,
+baut dann das Offline-Bundle und exportiert anschliessend:
 
 - `DATENPORTAL_OFFLINE_JARS_DIR`
 - `GRADLE_USER_HOME`
+- `GRADLE_JAVA_HOME_17`
 - `THEMEN_REPO_URL`
 - `THEMEN_REPO_BRANCH`
+
+`JAVA17_HOME` und `JAVA21_HOME` koennen gesetzt werden, um die jeweilige
+Auto-Erkennung lokal zu uebersteuern.
 
 Dann oeffnen:
 
@@ -110,6 +122,18 @@ Login:
 ```text
 admin / admin
 ```
+
+Bootstrap nach frischem Checkout:
+
+1. Jenkins starten.
+2. In Jenkins den Seed-Job `gretl-datenportal-plugin-generator-local` ausfuehren.
+3. Danach das Datenportal unter `/gretl-datenportal` oeffnen und einen generierten Job starten.
+
+Wichtig:
+
+- `jenkins-home/jobs` ist bewusst nicht versioniert. Generierte Jobs und Build-Historien bleiben lokal.
+- Nach einem frischen Checkout ist zunaechst nur der per JCasC erzeugte Seed-Job vorhanden.
+- Das lokal geklonte Themenrepo unter `jenkins-home/gretl-datenportal` bleibt ebenfalls unversioniert.
 
 ## Maintainer-Workflow nach Plugin-Aenderungen
 
@@ -148,6 +172,8 @@ Hinweise:
   Restart ist notwendig.
 - Der Seed-Lauf ist noetig, damit bestehende generierte Jobs neue
   Pipeline-Inhalte oder neue Plugin-Logik uebernehmen.
+- Auch auf einem frischen Checkout ist der Seed-Lauf der verpflichtende
+  Bootstrap-Schritt fuer alle generierten Jobs.
 
 ## Docker-Image bauen
 
@@ -170,10 +196,10 @@ Default-Image-Name:
 datenportal-jenkins-dev:local
 ```
 
-Das Basisimage ist standardmaessig `jenkins/jenkins:lts-jdk17`, weil der
-versionierte Tag `jenkins/jenkins:2.555.2-lts` aktuell Java 21 enthaelt.
-Falls ein exakt gepinntes JDK-17-Image verwendet werden soll, kann
-`JENKINS_IMAGE` beim Aufruf gesetzt werden.
+Das Basisimage ist standardmaessig `jenkins/jenkins:${JENKINS_VERSION}-lts`.
+Dieses Image bringt Jenkins auf Java 21, waehrend das Dockerfile zusaetzlich
+ein Temurin-JDK-17 nach `/opt/java/openjdk17` laedt und als
+`GRADLE_JAVA_HOME_17` fuer GRETL/Gradle exportiert.
 
 Zur Laufzeit sollte fuer echte Airgap-Tests zusaetzlich ein no-network-Modus
 verwendet werden, z. B. `docker run --network none ...`.
@@ -185,6 +211,9 @@ Der lokale Generator-Job heisst:
 ```text
 gretl-datenportal-plugin-generator-local
 ```
+
+Dieser Seed-Job wird beim lokalen Start ueber `casc/jenkins.yaml` angelegt.
+Die generierten Jobs selbst werden nicht versioniert.
 
 Nach einem Lauf sollten mindestens diese Jobs vorhanden sein:
 

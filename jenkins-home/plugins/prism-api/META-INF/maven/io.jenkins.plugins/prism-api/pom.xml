@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>prism-api</artifactId>
-  <version>1.30.0-727.vc475481f034d</version>
+  <version>1.30.0-741.v034eb_0b_0a_a_fa_</version>
   <packaging>hpi</packaging>
   <name>Prism API Plugin</name>
   <description>Provides Prism JS Source Code Highlighting for Jenkins plugins.</description>
@@ -26,7 +26,7 @@
   <scm>
     <connection>scm:git:https://github.com/jenkinsci/prism-api-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/prism-api-plugin.git</developerConnection>
-    <tag>c475481f034d2e598534482c3900291d56111f52</tag>
+    <tag>034eb0b0aafa668394b8e00d568f3c91991b9ca8</tag>
     <url>https://github.com/jenkinsci/prism-api-plugin</url>
   </scm>
   <distributionManagement>

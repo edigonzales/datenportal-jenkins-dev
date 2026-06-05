@@ -118,3 +118,8 @@ gradle-app.setting
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
 
+# Local Jenkins runtime state
+jenkins-home/jobs/
+jenkins-home/gretl-datenportal/
+jenkins-home/plugins/*.bak
+jenkins-home/queue.xml

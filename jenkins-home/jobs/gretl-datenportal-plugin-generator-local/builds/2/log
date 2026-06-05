@@ -1,7 +1,0 @@
-Started by user [8mha:////4I4u3WLqf7NzXHd9cekACAbWt17VCi9ZQX4SQ0gsIy6WAAAAlx+LCAAAAAAAAP9b85aBtbiIQTGjNKU4P08vOT+vOD8nVc83PyU1x6OyILUoJzMv2y+/JJUBAhiZGBgqihhk0NSjKDWzXb3RdlLBUSYGJk8GtpzUvPSSDB8G5tKinBIGIZ+sxLJE/ZzEvHT94JKizLx0a6BxUmjGOUNodHsLgAzWEgZu/dLi1CL9xJTczDwAj6GcLcAAAAA=[0madmin
-Running as SYSTEM
-Building in workspace /Users/stefan/sources/datenportal-jenkins-dev/jenkins-home/workspace/gretl-datenportal-plugin-generator-local
-Cloning managed topic repository checkout: file:///Users/stefan/sources/datenportal-themenrepo
-Cloning into '/Users/stefan/sources/datenportal-jenkins-dev/jenkins-home/gretl-datenportal/topic-repo'...
-Generated GRETL Datenportal jobs: []
-Finished: SUCCESS

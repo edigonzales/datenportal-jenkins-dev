@@ -61,7 +61,7 @@ warn_if_jenkins_running() {
 if [ ! -f "$HPI_SOURCE" ]; then
   echo "HPI not found: $HPI_SOURCE" >&2
   echo "Build it first, for example:" >&2
-  echo "  cd $PLUGIN_REPO && export JAVA_HOME=\"\$HOME/.sdkman/candidates/java/17.0.10-tem\" && export PATH=\"\$JAVA_HOME/bin:\$PATH\" && mvn -ntp package" >&2
+  echo "  cd $PLUGIN_REPO && export JAVA_HOME=\"\$HOME/.sdkman/candidates/java/21.0.10-tem\" && export PATH=\"\$JAVA_HOME/bin:\$PATH\" && mvn -ntp package" >&2
   exit 1
 fi
 

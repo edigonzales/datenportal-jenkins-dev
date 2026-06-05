@@ -47,14 +47,14 @@
     <jenkins.model.experimentalflags.UserExperimentalFlagsProperty>
       <flags/>
     </jenkins.model.experimentalflags.UserExperimentalFlagsProperty>
-    <hudson.security.HudsonPrivateSecurityRealm_-Details>
-      <passwordHash>#jbcrypt:$2a$10$V1ZZq67KLvI7GCvKoZG47es0Zu9l26VTSnMthSMDlP1.1uZlfspIK</passwordHash>
-    </hudson.security.HudsonPrivateSecurityRealm_-Details>
     <jenkins.security.LastGrantedAuthoritiesProperty>
       <roles>
         <string>authenticated</string>
       </roles>
       <timestamp>1780488785984</timestamp>
     </jenkins.security.LastGrantedAuthoritiesProperty>
+    <hudson.security.HudsonPrivateSecurityRealm_-Details>
+      <passwordHash>#jbcrypt:$2a$10$o7fWTt6NQM4CKxqzUWw/2ufH7LXxs5fiDPBJLEKS0UZmOksdeoBeG</passwordHash>
+    </hudson.security.HudsonPrivateSecurityRealm_-Details>
   </properties>
 </user>
