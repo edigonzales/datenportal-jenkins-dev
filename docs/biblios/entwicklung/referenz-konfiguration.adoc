@@ -1,0 +1,100 @@
+= Referenz: Konfiguration, Outputs und JCasC
+:page-layout: docs
+:toc: macro
+:toclevels: 2
+
+toc::[]
+
+== Wichtige Umgebungsvariablen
+
+[cols="1,3",options="header"]
+|===
+| Variable | Bedeutung
+
+| `JAVA17_HOME`
+| optionales Override fuer Java 17 bei GRETL und Gradle
+
+| `JAVA21_HOME`
+| optionales Override fuer Java 21 bei Jenkins
+
+| `THEMEN_REPO_DIR`
+| lokaler Pfad zum Themenrepo fuer Shell-Skripte
+
+| `THEMEN_REPO_URL`
+| Git-URL fuer das in Jenkins verwaltete Themenrepo
+
+| `THEMEN_REPO_BRANCH`
+| Branch fuer den Jenkins-Checkout des Themenrepos
+
+| `OFFLINE_BUNDLE_DIR`
+| Zielverzeichnis fuer `bin/build-offline-bundle.sh`
+
+| `JENKINS_VERSION`
+| Version des lokal geladenen Jenkins-WARs und Standard-Basisimages
+
+| `PLUGIN_MANAGER_VERSION`
+| Version des Jenkins Plugin Installation Manager
+
+| `IMAGE_NAME`
+| Zielname des lokal gebauten Docker-Images
+
+| `JENKINS_IMAGE`
+| Basisimage fuer `bin/build-image.sh`
+|===
+
+== Wichtige Outputs
+
+[cols="1,3",options="header"]
+|===
+| Pfad | Bedeutung
+
+| `build/offline-bundle/jars`
+| offline vorbereitete Plugin- und Runtime-Jars
+
+| `build/offline-bundle/gradle-user-home`
+| vorbereiteter Wrapper-Cache mit Gradle-Distribution
+
+| `build/offline-bundle/resolved-manifest.json`
+| dokumentiert aufgeloeste Komponenten und gestagte Jars
+
+| `jenkins-home/plugins/`
+| lokal installierte Jenkins-Plugins inklusive des Schwester-Plugins
+
+| `build/docker-context/`
+| temporaerer Build-Kontext fuer `bin/build-image.sh`
+|===
+
+== JCasC und Seed-Job
+
+`casc/jenkins.yaml` konfiguriert unter anderem:
+
+* den lokalen Admin-Benutzer `admin / admin`;
+* `displayName` und `urlName` des Datenportal-Plugins;
+* `topicRepositoryUrl` und `topicRepositoryBranch`;
+* den Seed-Job `gretl-datenportal-plugin-generator-local`.
+
+Der Seed-Job verwendet den Java-BuildStep
+`ch.so.agi.jenkins.gretldatenportal.GretlDatenportalSeedBuilder`.
+
+== Jenkins-Plugins
+
+`plugins.txt` beschreibt die zusaetzlich zu installierenden Jenkins-Plugins,
+darunter:
+
+* `configuration-as-code`
+* `job-dsl`
+* `workflow-aggregator`
+* `pipeline-model-definition`
+* `git`
+* `file-parameters`
+* `email-ext`
+
+Diese Liste beschreibt nur die Laufzeitumgebung dieses Repos, nicht den
+fachlichen Vertrag des Datenportals.
+
+== Weiterfuehrend
+
+* Themenrepo und Build-Vertrag:
+  link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo]
+* Plugin-Konfiguration, Scanner und Seed-Logik:
+  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin]

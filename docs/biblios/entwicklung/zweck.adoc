@@ -1,0 +1,59 @@
+= Zweck des Jenkins-Dev-Repos
+:page-layout: docs
+:toc: macro
+:toclevels: 2
+
+toc::[]
+
+== Rolle im Gesamtsystem
+
+`datenportal-jenkins-dev` ist das Betriebs- und Integrationsrepo fuer lokale
+Entwicklung. Es stellt einen reproduzierbaren Jenkins-Controller bereit, baut
+das benoetigte Offline-Bundle und koppelt das Themenrepo mit dem Jenkins-Plugin
+zu einer testbaren Gesamtumgebung.
+
+Das Repo beantwortet aus technischer Sicht drei Fragen:
+
+. Wie startet ein lokaler Jenkins-Controller mit der richtigen Plugin- und
+  JCasC-Konfiguration?
+. Wie werden Gradle-Wrapper, GRETL-Plugins und Runtime-Jars fuer Offline- oder
+  Airgap-nahe Tests vorbereitet?
+. Wie wird eine lokal gebaute Plugin-HPI in diese Umgebung installiert und
+  verifiziert?
+
+== Abgrenzung zu den anderen Repositories
+
+[cols="1,2,2",options="header"]
+|===
+| Repository | Rolle | Gehoert hierher?
+
+| `datenportal-jenkins-dev`
+| lokaler Jenkins, JCasC, Offline-Bundle, Docker-Image, Plugin-Installationsloop
+| Ja
+
+| `datenportal-themenrepo`
+| Organisationsstruktur, Datensaetze, Shared Defaults, Gradle-Build-Vertrag
+| Nein
+
+| `jenkins-gretl-datenportal-plugin`
+| Scanner, Startformular, Berechtigungen, Seed-Builder, Job-Generierung
+| Nein
+|===
+
+== Warum die Trennung wichtig ist
+
+Dieses Repo ist bewusst nicht die Source of Truth fuer fachliche oder
+plugin-interne Regeln:
+
+* Die Struktur von `gretl-datenportal-job.yaml`, `shared/Jenkinsfile` und den
+  Datensatzordnern gehoert ins Themenrepo.
+* Die Validierungsregeln, die Aufloesung des Themenrepo-Checkouts und die
+  Renderlogik fuer generierte Jobs gehoeren ins Plugin-Repo.
+* Dieses Repo dokumentiert nur, wie diese beiden Quellen lokal zusammenkommen.
+
+== Weiterfuehrend
+
+* Fachlicher Vertrag:
+  link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo]
+* Plugin-Implementierung:
+  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin]

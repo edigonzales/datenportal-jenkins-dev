@@ -1,0 +1,77 @@
+= Plugin installieren und Jenkins neu starten
+:page-layout: docs
+:toc: macro
+:toclevels: 2
+
+toc::[]
+
+== Plugin bauen
+
+Das Jenkins-Plugin wird im Schwester-Repo gebaut:
+
+```bash
+cd ../jenkins-gretl-datenportal-plugin
+export JAVA_HOME="$HOME/.sdkman/candidates/java/21.0.10-tem"
+export PATH="$JAVA_HOME/bin:$PATH"
+mvn -ntp package
+```
+
+Das Ergebnis ist:
+
+* `../jenkins-gretl-datenportal-plugin/target/jenkins-gretl-datenportal-plugin.hpi`
+
+== Plugin lokal installieren
+
+```bash
+cd ../datenportal-jenkins-dev
+./bin/install-gretl-datenportal-plugin.sh
+```
+
+Das Skript:
+
+* kopiert die HPI als `.jpi` nach `jenkins-home/plugins/`;
+* entfernt eine alte `.hpi`-Variante;
+* entfernt ein moegliches entpacktes Plugin-Verzeichnis;
+* warnt, wenn auf Port `8080` bereits ein Jenkins-Prozess laeuft.
+
+== Warum ein voller Restart noetig ist
+
+Ein einfaches Ueberschreiben der `.jpi` reicht nicht aus, wenn Jenkins das
+Plugin bereits geladen hat. Klassen und Jelly-Views werden erst nach einem
+vollen Restart neu geladen.
+
+Pflichtablauf nach Plugin-Aenderungen:
+
+. Plugin-HPI neu bauen.
+. HPI in `datenportal-jenkins-dev` installieren.
+. Jenkins komplett neu starten.
+. Seed-Job erneut ausfuehren.
+. Datenportal-UI und einen generierten Job testen.
+
+== Typischer End-to-End-Loop
+
+```bash
+cd ../jenkins-gretl-datenportal-plugin
+export JAVA_HOME="$HOME/.sdkman/candidates/java/21.0.10-tem"
+export PATH="$JAVA_HOME/bin:$PATH"
+mvn -ntp package
+
+cd ../datenportal-jenkins-dev
+./bin/install-gretl-datenportal-plugin.sh
+./bin/start.sh
+```
+
+Danach in Jenkins:
+
+. `gretl-datenportal-plugin-generator-local` ausfuehren;
+. `/gretl-datenportal` oeffnen;
+. einen Datensatz waehlen;
+. mindestens `METADATA_FILE` oder `DATA_FILE` hochladen;
+. den generierten Job starten.
+
+== Weiterfuehrend
+
+* Plugin-Implementierung und fachliche Render-/Validierungslogik:
+  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin]
+* Themenrepo-Vertrag fuer Organisationen, Datensaetze und Defaults:
+  link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo]

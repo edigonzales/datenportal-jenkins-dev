@@ -1,0 +1,87 @@
+= Lokalen Jenkins starten
+:page-layout: docs
+:toc: macro
+:toclevels: 2
+
+toc::[]
+
+== Voraussetzungen
+
+Fuer den lokalen Start werden benoetigt:
+
+* Git
+* `curl`
+* Java 21 fuer Jenkins
+* Java 17 fuer GRETL und den Themenrepo-Wrapper
+
+Optionale lokale Overrides:
+
+* `JAVA21_HOME`
+* `JAVA17_HOME`
+* `THEMEN_REPO_DIR`
+* `THEMEN_REPO_URL`
+* `THEMEN_REPO_BRANCH`
+
+== Standardstart
+
+```bash
+cd ../datenportal-jenkins-dev
+./bin/start.sh
+```
+
+`bin/start.sh` fuehrt in dieser Reihenfolge aus:
+
+. Java 17 und Java 21 aufloesen;
+. das Offline-Bundle bauen oder aktualisieren;
+. Jenkins-WAR und Plugin-Manager bei Bedarf herunterladen;
+. Jenkins-Plugins aus `plugins.txt` installieren oder aktualisieren;
+. Jenkins mit `casc/jenkins.yaml` starten.
+
+Der Start exportiert dabei unter anderem:
+
+* `THEMEN_REPO_URL`
+* `THEMEN_REPO_BRANCH`
+* `DATENPORTAL_OFFLINE_JARS_DIR`
+* `GRADLE_USER_HOME`
+* `GRADLE_JAVA_HOME_17`
+
+== Lokaler Zugriff
+
+Nach dem Start:
+
+* URL: `http://localhost:8080`
+* Login: `admin / admin`
+* Datenportal-UI: `http://localhost:8080/gretl-datenportal`
+
+== Bootstrap nach frischem Checkout
+
+Nach einem frischen Jenkins-Home existiert zunaechst nur der Seed-Job aus
+`casc/jenkins.yaml`.
+
+Pflichtablauf:
+
+. Jenkins starten.
+. In Jenkins `gretl-datenportal-plugin-generator-local` ausfuehren.
+. Danach `/gretl-datenportal` oeffnen.
+. Einen generierten Organisationsjob mit Upload starten.
+
+Die generierten Jobs unter `jenkins-home/jobs` bleiben bewusst lokal und sind
+nicht versioniert.
+
+== Lokale Beispieldaten
+
+Das Verzeichnis `data/` enthaelt lokale Beispiel- und Testdateien fuer manuelle
+Pruefungen der Entwicklungsumgebung. Diese Dateien sind weder der fachliche
+Vertrag des Themenrepos noch die kanonische Plugin-Doku.
+
+Wenn Beispiel-Uploads oder Testdatensaetze fachlich beschrieben werden muessen,
+gehoert die strukturierte Erklaerung ins Themenrepo.
+
+== Weiterfuehrend
+
+* Die Organisations- und Datensatzstruktur ist im Repo
+  link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo]
+  beschrieben.
+* Die Logik hinter Seed-Job, Scanner und generierten Jobs ist im Repo
+  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin]
+  beschrieben.

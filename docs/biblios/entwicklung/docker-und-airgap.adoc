@@ -1,0 +1,64 @@
+= Docker-Image und Airgap
+:page-layout: docs
+:toc: macro
+:toclevels: 2
+
+toc::[]
+
+== Image bauen
+
+```bash
+cd ../datenportal-jenkins-dev
+./bin/build-image.sh
+```
+
+Default-Image-Name:
+
+* `datenportal-jenkins-dev:local`
+
+Default-Basisimage:
+
+* `jenkins/jenkins:${JENKINS_VERSION}-lts`
+
+== Was in den Build-Kontext gestaged wird
+
+Der Image-Build staged:
+
+* `plugins.txt`
+* `casc/jenkins.yaml`
+* das vorbereitete Offline-Bundle
+* das Themenrepo als lokales Git-Quellrepo
+* das lokal gebaute `jenkins-gretl-datenportal-plugin.hpi`
+
+Dadurch laesst sich die lokale Entwicklungsumgebung reproduzierbar als Image
+abbilden.
+
+== Java-Laufzeiten im Image
+
+Das Jenkins-Basisimage bringt Jenkins auf Java 21. Das Dockerfile laedt
+zusaetzlich ein Java-17-JDK nach `/opt/java/openjdk17` und exportiert dieses
+als `GRADLE_JAVA_HOME_17` fuer GRETL und den Themenrepo-Wrapper.
+
+Die Trennung der Laufzeiten entspricht damit dem lokalen Shell-Setup.
+
+== Airgap-nahe Verifikation
+
+Fuer harte Airgap-Tests reicht `--offline` allein nicht. Zusaetzlich sollte der
+Container oder Prozess ohne Netzwerkzugang laufen, zum Beispiel:
+
+```bash
+docker run --network none datenportal-jenkins-dev:local
+```
+
+Der eigentliche Offline-Vertrag bleibt dabei:
+
+* Gradle-Distribution aus `GRADLE_USER_HOME`
+* Plugin- und Runtime-Jars aus `DATENPORTAL_OFFLINE_JARS_DIR`
+
+== Weiterfuehrend
+
+* Die Build-Koordinaten fuer das Offline-Bundle liegen im Repo
+  link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo].
+* Die generierten Jobs, die spaeter gegen dieses Image laufen, sind im Repo
+  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin]
+  beschrieben.

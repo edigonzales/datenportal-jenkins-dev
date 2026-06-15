@@ -1,0 +1,82 @@
+= Offline-Bundle
+:page-layout: docs
+:toc: macro
+:toclevels: 2
+
+toc::[]
+
+== Zweck
+
+Das Offline-Bundle stellt alles bereit, was der Themenrepo-Wrapper und die
+GRETL-Plugins fuer einen Offline- oder Airgap-nahen Lauf benoetigen.
+
+Der Bundle-Bau gehoert bewusst in dieses Repo, nicht ins Themenrepo.
+
+== Bundle bauen
+
+```bash
+cd ../datenportal-jenkins-dev
+./bin/build-offline-bundle.sh
+```
+
+Standardziel:
+
+* `build/offline-bundle/jars`
+* `build/offline-bundle/gradle-user-home`
+* `build/offline-bundle/resolved-manifest.json`
+
+`resolved-manifest.json` dokumentiert die effektiv aufgeloesten und gestagten
+Runtime- und Plugin-Jars.
+
+== Laufzeitvertrag
+
+Das Bundle besteht aus zwei Teilen:
+
+[cols="1,3",options="header"]
+|===
+| Teil | Rolle
+
+| `gradle-user-home`
+| enthaelt die vom Themenrepo-Wrapper benoetigte Gradle-Distribution und die
+  vorbereiteten Wrapper-Caches
+
+| `jars`
+| enthaelt die offline vorbereiteten Plugin- und Runtime-Jars fuer
+  `initscript`, `pluginManagement` und Runtime-Klassenpfade
+|===
+
+Der technische Ablauf ist:
+
+. Jenkins checkt das Themenrepo aus.
+. `shared/Jenkinsfile` startet im Repo-Root `shared/bin/gradlew-java17.sh`.
+. Der Wrapper liest seine Distribution unter
+  `GRADLE_USER_HOME/wrapper/dists`.
+. `shared/gradle/init.gradle` bindet `DATENPORTAL_OFFLINE_JARS_DIR` fuer
+  Plugin- und Abhaengigkeitsauflosung ein.
+
+== Source of Truth fuer Koordinaten
+
+Dieses Repo baut das Bundle, aber die Source of Truth fuer Repositories,
+Plugin-Versionen und Offline-Seed-Koordinaten bleibt
+`shared/gradle/gradle-build.properties` im Themenrepo.
+
+Dadurch benutzen Online- und Offline-Aufloesung dieselben zentral gepflegten
+Upstream-Koordinaten.
+
+== Verifikation
+
+Ein typischer Offline-Test besteht aus zwei Schritten:
+
+. Bundle hier neu bauen.
+. Den Themenrepo-Wrapper mit `GRADLE_USER_HOME` und
+  `DATENPORTAL_OFFLINE_JARS_DIR` gegen dieses Bundle starten.
+
+Die fachliche und build-seitige Verifikation des Wrapper-Vertrags ist im
+Themenrepo dokumentiert.
+
+== Weiterfuehrend
+
+* Gradle-Build-Vertrag und Offline-Koordinaten:
+  link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo]
+* Pipeline- und Job-Logik, die dieses Bundle verbraucht:
+  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin]

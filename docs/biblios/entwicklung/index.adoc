@@ -1,0 +1,48 @@
+= Entwicklung: Jenkins-Dev-Umgebung
+:page-layout: docs
+:toc: macro
+:toclevels: 2
+
+Dieses Repository enthaelt den lokalen Jenkins-Controller und die
+Integrationsumgebung fuer das GRETL-Datenportal. Es beschreibt, wie das Plugin
+lokal installiert, Jenkins mit getrennten Java-Laufzeiten gestartet und ein
+offline-faehiges Bundle fuer GRETL und Gradle vorbereitet wird.
+
+toc::[]
+
+== Was gehoert in diesen Bereich?
+
+Dieser Bereich beschreibt:
+
+* den lokalen Jenkins-Start via `bin/start.sh`;
+* `casc/jenkins.yaml`, `plugins.txt` und den Seed-Job-Bootstrap;
+* den Bau und die Struktur des Offline-Bundles;
+* den Plugin-Installations- und Restart-Loop fuer lokale Entwicklung;
+* den Docker-Image-Build fuer reproduzierbare lokale und Airgap-nahe Tests.
+
+== Was gehoert nicht in diesen Bereich?
+
+Nicht behandelt werden hier:
+
+* der fachliche Vertrag des Themenrepos;
+* die Struktur von Organisationen und Datensaetzen;
+* die Implementierungsdetails des Jenkins-Plugins.
+
+Diese Themen gehoeren in die Repositories `datenportal-themenrepo` und
+`jenkins-gretl-datenportal-plugin`.
+
+== Kurzfassung
+
+Dieses Repo ist keine fachliche Quelle, sondern die technische
+Ausfuehrungsumgebung. Es verbindet drei Dinge:
+
+* ein lokal startbares Jenkins mit JCasC und Seed-Job;
+* ein vorbereitetes Offline-Bundle fuer GRETL, Gradle-Wrapper und Plugins;
+* einen verkuerzten lokalen Entwicklungsloop fuer das Schwester-Plugin.
+
+== Weiterfuehrend
+
+* Der fachliche Vertrag liegt im Repo
+  link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo].
+* Scanner-, UI- und Seed-Logik liegen im Repo
+  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin].

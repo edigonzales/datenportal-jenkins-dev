@@ -1,1 +1,0 @@
-- Grundwasserqualität: Gut wegen long data und Nachweisgrenze für Beispiele. Nachprüfen: Es kann auch sein, dass die Blätter anders strukturiert sind. Wie soll jemande maschinell mit solchen DAten arbeiten können?
