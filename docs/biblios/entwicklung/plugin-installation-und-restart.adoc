@@ -63,7 +63,8 @@ cd ../datenportal-jenkins-dev
 
 Danach in Jenkins:
 
-. `gretl-datenportal-plugin-generator-local` ausfuehren;
+. den automatisch angelegten Job `gretl-datenportal-seed` manuell starten oder
+  auf den Cron-Lauf warten;
 . `/gretl-datenportal` oeffnen;
 . einen Datensatz waehlen;
 . mindestens `METADATA_FILE` oder `DATA_FILE` hochladen;

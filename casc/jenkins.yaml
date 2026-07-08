@@ -25,19 +25,6 @@ unclassified:
     topicRepositoryUrl: "${THEMEN_REPO_URL}"
     topicRepositoryBranch: "${THEMEN_REPO_BRANCH}"
     topicRepositoryPath: ""
-
-jobs:
-  - script: |
-      job('gretl-datenportal-plugin-generator-local') {
-        description('Generates GRETL Datenportal Pipeline jobs using the Java plugin BuildStep and the local themes repository')
-        logRotator(-1, 10)
-        steps {
-          configure { project ->
-            project / builders << 'ch.so.agi.jenkins.gretldatenportal.GretlDatenportalSeedBuilder' {
-              topicRepositoryUrl('${THEMEN_REPO_URL}')
-              topicRepositoryBranch('${THEMEN_REPO_BRANCH}')
-              topicRepositoryPath('')
-            }
-          }
-        }
-      }
+    seedJobAutoCreate: true
+    seedJobCron: "H/15 * * * *"
+    seedJobBuildsToKeep: 20

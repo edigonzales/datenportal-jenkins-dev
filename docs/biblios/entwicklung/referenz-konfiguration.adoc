@@ -71,10 +71,13 @@ toc::[]
 * den lokalen Admin-Benutzer `admin / admin`;
 * `displayName` und `urlName` des Datenportal-Plugins;
 * `topicRepositoryUrl` und `topicRepositoryBranch`;
-* den Seed-Job `gretl-datenportal-plugin-generator-local`.
+* `seedJobAutoCreate`, `seedJobCron` und `seedJobBuildsToKeep`.
 
-Der Seed-Job verwendet den Java-BuildStep
-`ch.so.agi.jenkins.gretldatenportal.GretlDatenportalSeedBuilder`.
+Der Seed-Job `gretl-datenportal-seed` wird nicht mehr per JCasC/Job-DSL erzeugt.
+Das Plugin provisioniert ihn nach dem Jenkins-Start selbst und verwendet dabei
+den Java-BuildStep
+`ch.so.agi.jenkins.gretldatenportal.GretlDatenportalSeedBuilder` mit der globalen
+Themenrepo-Konfiguration.
 
 == Jenkins-Plugins
 
@@ -82,7 +85,6 @@ Der Seed-Job verwendet den Java-BuildStep
 darunter:
 
 * `configuration-as-code`
-* `job-dsl`
 * `workflow-aggregator`
 * `pipeline-model-definition`
 * `git`

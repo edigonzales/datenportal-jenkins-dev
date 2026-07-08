@@ -48,6 +48,20 @@ cd ../datenportal-jenkins-dev
 
 Wenn Jenkins bereits laeuft, ist anschliessend ein voller Restart noetig.
 
+### Seed-Job
+
+Nach dem Jenkins-Start legt das Plugin den Job `gretl-datenportal-seed`
+automatisch an. Der Job:
+
+- ist aktiviert, sobald `THEMEN_REPO_URL` oder ein Pfad konfiguriert ist;
+- laeuft per Cron `H/15 * * * *`;
+- kann fuer sofortige lokale Tests manuell gestartet werden.
+
+Der Seed-Job wird nicht mehr per JCasC/Job-DSL erzeugt. Fuer bestehende lokale
+Jenkins-Homes kann der alte Job `gretl-datenportal-plugin-generator-local`
+manuell geloescht werden; relevant ist neu ausschliesslich
+`gretl-datenportal-seed`.
+
 ### Offline-Bundle separat bauen
 
 ```bash

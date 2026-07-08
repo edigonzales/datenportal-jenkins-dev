@@ -55,18 +55,21 @@ Nach dem Start:
 
 == Bootstrap nach frischem Checkout
 
-Nach einem frischen Jenkins-Home existiert zunaechst nur der Seed-Job aus
-`casc/jenkins.yaml`.
+Nach einem frischen Jenkins-Home provisioniert das Plugin den Seed-Job
+`gretl-datenportal-seed` nach dem Start selbst. Er wird nicht mehr per JCasC
+erzeugt.
 
 Pflichtablauf:
 
 . Jenkins starten.
-. In Jenkins `gretl-datenportal-plugin-generator-local` ausfuehren.
+. Den automatisch angelegten Job `gretl-datenportal-seed` manuell starten oder
+  auf den Cron-Lauf warten.
 . Danach `/gretl-datenportal` oeffnen.
 . Einen generierten Organisationsjob mit Upload starten.
 
 Die generierten Jobs unter `jenkins-home/jobs` bleiben bewusst lokal und sind
-nicht versioniert.
+nicht versioniert. Ein bestehender lokaler Job
+`gretl-datenportal-plugin-generator-local` kann manuell geloescht werden.
 
 == Lokale Beispieldaten
 

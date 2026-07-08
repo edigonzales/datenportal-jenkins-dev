@@ -5,4 +5,7 @@
   <topicRepositoryUrl>file:///Users/stefan/sources/datenportal-themenrepo</topicRepositoryUrl>
   <topicRepositoryBranch>main</topicRepositoryBranch>
   <topicRepositoryPath></topicRepositoryPath>
+  <seedJobAutoCreate>true</seedJobAutoCreate>
+  <seedJobCron>H/15 * * * *</seedJobCron>
+  <seedJobBuildsToKeep>20</seedJobBuildsToKeep>
 </ch.so.agi.jenkins.gretldatenportal.GretlDatenportalGlobalConfiguration>
