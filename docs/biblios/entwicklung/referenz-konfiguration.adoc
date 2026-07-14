@@ -69,9 +69,19 @@ toc::[]
 `casc/jenkins.yaml` konfiguriert unter anderem:
 
 * den lokalen Admin-Benutzer `admin / admin`;
+* den lokalen JCasC-Security-Realm mit den Testbenutzern für Entwicklung ohne
+  AD/LDAP;
 * `displayName` und `urlName` des Datenportal-Plugins;
 * `topicRepositoryUrl` und `topicRepositoryBranch`;
-* `seedJobAutoCreate`, `seedJobCron` und `seedJobBuildsToKeep`.
+* `seedJobAutoCreate`, `seedJobCron` und `seedJobBuildsToKeep`;
+* `seedJobOperatorsTeam` als Referenz auf das Seeder-Team im Themenrepo.
+
+Die lokale Sicherheitskonfiguration verwendet `projectMatrix` aus dem Plugin
+`matrix-auth`. `admin` besitzt `Overall/Administer`; die lokalen Testbenutzer
+besitzen global nur `Overall/Read`. Jobrechte werden nicht global an
+`authenticated` vergeben, sondern durch die projektbezogenen ACLs des
+Datenportal-Plugins. Die Benutzer-IDs im lokalen Realm müssen deshalb mit den
+IDs in `shared/gretl-datenportal-teams.yaml` übereinstimmen.
 
 Der Seed-Job `gretl-datenportal-seed` wird nicht mehr per JCasC/Job-DSL erzeugt.
 Das Plugin provisioniert ihn nach dem Jenkins-Start selbst und verwendet dabei
@@ -90,6 +100,7 @@ darunter:
 * `git`
 * `file-parameters`
 * `email-ext`
+* `matrix-auth`
 
 Diese Liste beschreibt nur die Laufzeitumgebung dieses Repos, nicht den
 fachlichen Vertrag des Datenportals.

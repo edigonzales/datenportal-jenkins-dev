@@ -4,3 +4,4 @@ pipeline-model-definition
 git
 file-parameters
 email-ext
+matrix-auth

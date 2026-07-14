@@ -53,6 +53,47 @@ Nach dem Start:
 * Login: `admin / admin`
 * Datenportal-UI: `http://localhost:8080/gretl-datenportal`
 
+Jenkins verwendet in dieser Entwicklungsumgebung den lokalen JCasC-
+Security-Realm. Die Testbenutzer werden beim Start aus `casc/jenkins.yaml`
+angelegt; eine AD-/LDAP-Umgebung ist für lokale Tests deshalb nicht nötig. In
+einer produktiven Installation übernimmt weiterhin die konfigurierte
+AD-/LDAP-/Entra-Authentisierung das Anmelden. Das Plugin verwendet für die
+Autorisierung die bereits authentisierte Jenkins-Benutzer-ID.
+
+Für Berechtigungstests stehen zusätzlich diese lokalen Konten zur Verfügung:
+
+* `seed-user / seed`: darf den Seeder-Job lesen und starten;
+* `read-user / read`: darf freigegebene Organisationsjobs lesen;
+* `afu-user / afu`: darf den AFU-Job lesen und starten;
+* `statistikdienst-user / statistikdienst`: Benutzer und Team sind für das
+  Statistikdienst-Fixture vorbereitet. Mit der aktuellen Datei
+  `statistikdienst/XXXXXgretl-datenportal-job.yaml` wird jedoch kein
+  Statistikdienst-Job erzeugt.
+
+Die Konten erhalten keine globalen `Item`-Rechte. Die tatsächlichen Jobrechte
+werden aus `shared/gretl-datenportal-teams.yaml` des Themenrepos synchronisiert.
+Die dort eingetragenen IDs müssen zu den Jenkins-Benutzer-IDs passen. Das
+Plugin löst die Teams auf und setzt mit `matrix-auth` die projektbezogenen
+ACLs; globale `Item/Read`- oder `Item/Build`-Rechte für normale Benutzer sind
+in der lokalen Konfiguration nicht vorgesehen.
+
+== Lokale Berechtigungstests
+
+Nach dem ersten erfolgreichen Seed-Lauf können die Konten gezielt geprüft
+werden:
+
+* `seed-user / seed` sieht `gretl-datenportal-seed` und darf ihn starten, aber
+  nicht konfigurieren;
+* `read-user / read` sieht freigegebene Organisationsjobs, darf sie aber nicht
+  bauen;
+* `afu-user / afu` sieht den AFU-Job und darf ihn bauen;
+* nicht berechtigte Benutzer sehen die jeweiligen Jobs nicht und können sie
+  auch nicht über die Jenkins-API starten.
+
+Der Seed-Job ist nach dem Jenkins-Start zunächst nur für `admin` sicher
+erreichbar. Nach dem ersten Lauf wird auch seine ACL anhand des konfigurierten
+Seeder-Teams synchronisiert.
+
 == Bootstrap nach frischem Checkout
 
 Nach einem frischen Jenkins-Home provisioniert das Plugin den Seed-Job
@@ -61,11 +102,25 @@ erzeugt.
 
 Pflichtablauf:
 
-. Jenkins starten.
-. Den automatisch angelegten Job `gretl-datenportal-seed` manuell starten oder
-  auf den Cron-Lauf warten.
-. Danach `/gretl-datenportal` oeffnen.
-. Einen generierten Organisationsjob mit Upload starten.
+. Änderungen im Themenrepo committen und auf den von Jenkins konfigurierten
+  Branch pushen beziehungsweise dort bereitstellen. Der Seeder checkt den
+  committed Git-Stand aus; uncommitted Änderungen im lokalen Arbeitsverzeichnis
+  werden nicht verarbeitet.
+. `./bin/start.sh` ausführen.
+. Mit `admin / admin` anmelden.
+. Den automatisch angelegten Job `gretl-datenportal-seed` als `admin` manuell
+  starten oder auf den Cron-Lauf warten. Der erste Lauf benötigt den
+  Administrator, weil die Seeder-ACL erst danach aus dem Themenrepo geladen
+  wird.
+. Danach mit `seed-user / seed`, `read-user / read` und `afu-user / afu` die
+  Seeder- und Organisations-ACLs prüfen.
+. `/gretl-datenportal` öffnen und die erzeugten Organisationsjobs prüfen.
+
+Der aktuelle lokale Statistikdienst-Fixture wird dabei nicht als
+Organisationskonfiguration erkannt: Der Dateiname enthält den Marker
+`XXXXX` statt exakt `gretl-datenportal-job.yaml`. Deshalb entsteht derzeit
+kein `gretl-datenportal-statistikdienst`; die Aktivierung dieses Fixtures ist
+nicht Teil dieser Dokumentationsänderung.
 
 Die generierten Jobs unter `jenkins-home/jobs` bleiben bewusst lokal und sind
 nicht versioniert. Ein bestehender lokaler Job

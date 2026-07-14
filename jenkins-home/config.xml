@@ -5,8 +5,12 @@
   <numExecutors>2</numExecutors>
   <mode>NORMAL</mode>
   <useSecurity>true</useSecurity>
-  <authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy">
-    <denyAnonymousReadAccess>true</denyAnonymousReadAccess>
+  <authorizationStrategy class="hudson.security.ProjectMatrixAuthorizationStrategy">
+    <permission>USER:hudson.model.Hudson.Administer:admin</permission>
+    <permission>USER:hudson.model.Hudson.Read:afu-user</permission>
+    <permission>USER:hudson.model.Hudson.Read:read-user</permission>
+    <permission>USER:hudson.model.Hudson.Read:seed-user</permission>
+    <permission>USER:hudson.model.Hudson.Read:statistikdienst-user</permission>
   </authorizationStrategy>
   <securityRealm class="hudson.security.HudsonPrivateSecurityRealm">
     <disableSignup>true</disableSignup>

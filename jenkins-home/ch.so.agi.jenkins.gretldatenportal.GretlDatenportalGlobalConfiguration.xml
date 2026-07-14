@@ -8,4 +8,5 @@
   <seedJobAutoCreate>true</seedJobAutoCreate>
   <seedJobCron>H/15 * * * *</seedJobCron>
   <seedJobBuildsToKeep>20</seedJobBuildsToKeep>
+  <seedJobOperatorsTeam>gretl-datenportal-seed-operators</seedJobOperatorsTeam>
 </ch.so.agi.jenkins.gretldatenportal.GretlDatenportalGlobalConfiguration>

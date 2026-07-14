@@ -10,10 +10,38 @@ jenkins:
       users:
         - id: "admin"
           password: "admin"
+        - id: "seed-user"
+          password: "seed"
+        - id: "read-user"
+          password: "read"
+        - id: "afu-user"
+          password: "afu"
+        - id: "statistikdienst-user"
+          password: "statistikdienst"
 
   authorizationStrategy:
-    loggedInUsersCanDoAnything:
-      allowAnonymousRead: false
+    projectMatrix:
+      entries:
+        - user:
+            name: "admin"
+            permissions:
+              - "Overall/Administer"
+        - user:
+            name: "seed-user"
+            permissions:
+              - "Overall/Read"
+        - user:
+            name: "read-user"
+            permissions:
+              - "Overall/Read"
+        - user:
+            name: "afu-user"
+            permissions:
+              - "Overall/Read"
+        - user:
+            name: "statistikdienst-user"
+            permissions:
+              - "Overall/Read"
 
 unclassified:
   location:
@@ -28,3 +56,4 @@ unclassified:
     seedJobAutoCreate: true
     seedJobCron: "H/15 * * * *"
     seedJobBuildsToKeep: 20
+    seedJobOperatorsTeam: "gretl-datenportal-seed-operators"
