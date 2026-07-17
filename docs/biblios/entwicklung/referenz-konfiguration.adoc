@@ -18,13 +18,28 @@ toc::[]
 | optionales Override fuer Java 21 bei Jenkins
 
 | `THEMEN_REPO_DIR`
-| lokaler Pfad zum Themenrepo fuer Shell-Skripte
+| lokale Build-Quelle fuer `bin/build-offline-bundle.sh` und lokale Shell-Tests
+
+| `THEMEN_REPO_MODE`
+| `managed-git` (Default) fuer einen Jenkins-internen Git-Checkout oder `working-tree` fuer einen lokalen Snapshot des Arbeitsbaums
 
 | `THEMEN_REPO_URL`
-| Git-URL fuer das in Jenkins verwaltete Themenrepo
+| Runtime-Git-URL im Modus `managed-git`; im Produktionsimage Pflicht
+
+| `THEMEN_REPO_PATH`
+| lokaler Arbeitsbaum im Modus `working-tree`
 
 | `THEMEN_REPO_BRANCH`
 | Branch fuer den Jenkins-Checkout des Themenrepos
+
+| `JENKINS_HOME_DIR` / `JENKINS_HOME`
+| Jenkins-Home fuer `start.sh` und Plugin-Installation
+
+| `FRESH_JENKINS_HOME_DIR`
+| optionales, auf `build/` begrenztes Ziel von `start-fresh.sh`
+
+| `SKIP_OFFLINE_BUNDLE`
+| `1` verwendet ein vorhandenes Bundle beim Neustart nach Plugin-Aenderungen
 
 | `OFFLINE_BUNDLE_DIR`
 | Zielverzeichnis fuer `bin/build-offline-bundle.sh`
@@ -42,6 +57,13 @@ toc::[]
 | Basisimage fuer `bin/build-image.sh`
 |===
 
+Fuer das Produktionsimage kommen zusaetzlich `JENKINS_URL`,
+`JENKINS_ADMIN_ADDRESS`, `AD_DOMAIN`, `AD_SERVERS`, `AD_BIND_NAME`,
+`AD_BIND_PASSWORD`, `JENKINS_ADMIN_GROUP` und
+`JENKINS_AUTHENTICATED_GROUP` aus der Deployment-Konfiguration. Das
+Bind-Passwort ist als Secret zu injizieren und darf nicht in JCasC-Dateien oder
+im Repository stehen.
+
 == Wichtige Outputs
 
 [cols="1,3",options="header"]
@@ -57,7 +79,7 @@ toc::[]
 | `build/offline-bundle/resolved-manifest.json`
 | dokumentiert aufgeloeste Komponenten und gestagte Jars
 
-| `jenkins-home/plugins/`
+| `$JENKINS_HOME_DIR/plugins/`
 | lokal installierte Jenkins-Plugins inklusive des Schwester-Plugins
 
 | `build/docker-context/`
@@ -88,6 +110,15 @@ Das Plugin provisioniert ihn nach dem Jenkins-Start selbst und verwendet dabei
 den Java-BuildStep
 `ch.so.agi.jenkins.gretldatenportal.GretlDatenportalSeedBuilder` mit der globalen
 Themenrepo-Konfiguration.
+
+Das Produktionsimage verwendet stattdessen `casc/jenkins-production.yaml` ueber
+`CASC_JENKINS_CONFIG`. Diese Datei aktiviert das Active-Directory-Realm mit
+verpflichtendem StartTLS, AD-Gruppen und projektbezogener
+Matrix-Autorisierung. Domain, Server, Bind-Account, Java-Truststore und Gruppen
+sind Deployment-Konfiguration; das lokale `admin/admin`-Profil ist darin nicht
+enthalten. Für einen eigenen Truststore muss die Deployment-Konfiguration die
+passenden Java-Optionen setzen und dabei
+`-Djenkins.install.runSetupWizard=false` aus `JENKINS_JAVA_OPTS` erhalten.
 
 == Jenkins-Plugins
 

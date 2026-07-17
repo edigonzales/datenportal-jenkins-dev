@@ -8,9 +8,10 @@ PLUGIN_REPO="${PLUGIN_REPO:-/Users/stefan/sources/jenkins-gretl-datenportal-plug
 PLUGIN_HPI_SOURCE="${PLUGIN_HPI_SOURCE:-$PLUGIN_REPO/target/jenkins-gretl-datenportal-plugin.hpi}"
 OFFLINE_BUNDLE_DIR="${OFFLINE_BUNDLE_DIR:-$ROOT_DIR/build/offline-bundle}"
 DOCKER_CONTEXT_DIR="$ROOT_DIR/build/docker-context"
-IMAGE_NAME="${IMAGE_NAME:-datenportal-jenkins-dev:local}"
+IMAGE_NAME="${IMAGE_NAME:-datenportal-jenkins:local}"
 JENKINS_VERSION="${JENKINS_VERSION:-2.555.2}"
-JENKINS_IMAGE="${JENKINS_IMAGE:-jenkins/jenkins:${JENKINS_VERSION}-lts}"
+JENKINS_IMAGE="${JENKINS_IMAGE:-jenkins/jenkins:${JENKINS_VERSION}-lts-jdk21}"
+TEMURIN17_VERSION="${TEMURIN17_VERSION:-17.0.15+6}"
 
 command -v docker >/dev/null || { echo "Docker fehlt."; exit 1; }
 command -v rsync >/dev/null || { echo "rsync fehlt."; exit 1; }
@@ -24,22 +25,19 @@ fi
 "$ROOT_DIR/bin/build-offline-bundle.sh" "$OFFLINE_BUNDLE_DIR"
 
 rm -rf "$DOCKER_CONTEXT_DIR"
-mkdir -p "$DOCKER_CONTEXT_DIR/casc" "$DOCKER_CONTEXT_DIR/topic-repo-source" "$DOCKER_CONTEXT_DIR/offline-bundle"
+mkdir -p "$DOCKER_CONTEXT_DIR/offline-bundle"
 
 cp "$ROOT_DIR/plugins.txt" "$DOCKER_CONTEXT_DIR/plugins.txt"
-cp -R "$ROOT_DIR/casc/." "$DOCKER_CONTEXT_DIR/casc/"
+cp "$ROOT_DIR/casc/jenkins-production.yaml" "$DOCKER_CONTEXT_DIR/jenkins.yaml"
+cp "$ROOT_DIR/docker-entrypoint.sh" "$DOCKER_CONTEXT_DIR/docker-entrypoint.sh"
 cp "$PLUGIN_HPI_SOURCE" "$DOCKER_CONTEXT_DIR/jenkins-gretl-datenportal-plugin.jpi"
-rsync -a --delete \
-  --exclude '.DS_Store' \
-  --exclude '.gradle/' \
-  --exclude 'build/' \
-  "$THEMEN_REPO_DIR/" "$DOCKER_CONTEXT_DIR/topic-repo-source/"
 rsync -a --delete \
   --exclude '.DS_Store' \
   "$OFFLINE_BUNDLE_DIR/" "$DOCKER_CONTEXT_DIR/offline-bundle/"
 
 docker build \
   --build-arg JENKINS_IMAGE="$JENKINS_IMAGE" \
+  --build-arg TEMURIN17_VERSION="$TEMURIN17_VERSION" \
   -f "$ROOT_DIR/Dockerfile" \
   -t "$IMAGE_NAME" \
   "$DOCKER_CONTEXT_DIR"

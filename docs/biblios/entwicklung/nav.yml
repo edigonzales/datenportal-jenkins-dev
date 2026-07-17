@@ -13,7 +13,7 @@ items:
         page: offline-bundle.adoc
       - title: Plugin installieren und Jenkins neu starten
         page: plugin-installation-und-restart.adoc
-      - title: Docker-Image und Airgap
+      - title: Docker-Image, Airgap und Produktion
         page: docker-und-airgap.adoc
 
   - title: Referenz

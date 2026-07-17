@@ -14,24 +14,33 @@ cd ../datenportal-jenkins-dev
 
 Default-Image-Name:
 
-* `datenportal-jenkins-dev:local`
+* `datenportal-jenkins:local`
 
 Default-Basisimage:
 
-* `jenkins/jenkins:${JENKINS_VERSION}-lts`
+* `jenkins/jenkins:${JENKINS_VERSION}-lts-jdk21`
 
 == Was in den Build-Kontext gestaged wird
 
 Der Image-Build staged:
 
 * `plugins.txt`
-* `casc/jenkins.yaml`
+* `casc/jenkins-production.yaml` als `jenkins.yaml`
 * das vorbereitete Offline-Bundle
-* das Themenrepo als lokales Git-Quellrepo
 * das lokal gebaute `jenkins-gretl-datenportal-plugin.hpi`
+* das EntryPoint-Skript
 
-Dadurch laesst sich die lokale Entwicklungsumgebung reproduzierbar als Image
-abbilden.
+Das Themenrepo wird bewusst nicht in das Image kopiert. `THEMEN_REPO_DIR` ist
+nur die Build-Quelle für das Offline-Bundle; zur Laufzeit werden
+`THEMEN_REPO_URL` und `THEMEN_REPO_BRANCH` aus der Deployment-Konfiguration
+gesetzt. Das Jenkins-Home gehört in ein persistentes Volume und nicht in das
+Image.
+
+Das lokale Shell-Profil mit `casc/jenkins.yaml` und `admin/admin` bleibt auf die
+Entwicklung beschränkt. Das Image verwendet `casc/jenkins-production.yaml` mit
+Active Directory, verpflichtendem StartTLS und projektbezogener
+Matrix-Autorisierung. Der Java-Truststore wird von der Deployment-Umgebung über
+`JAVA_OPTS` beziehungsweise `JENKINS_JAVA_OPTS` bereitgestellt.
 
 == Java-Laufzeiten im Image
 
@@ -47,7 +56,19 @@ Fuer harte Airgap-Tests reicht `--offline` allein nicht. Zusaetzlich sollte der
 Container oder Prozess ohne Netzwerkzugang laufen, zum Beispiel:
 
 ```bash
-docker run --network none datenportal-jenkins-dev:local
+docker run --network none \
+  -e THEMEN_REPO_URL=https://git.example.invalid/datenportal-themenrepo.git \
+  -e THEMEN_REPO_BRANCH=main \
+  -e JENKINS_URL=https://jenkins.example.invalid/ \
+  -e JENKINS_ADMIN_ADDRESS=jenkins@example.invalid \
+  -e AD_DOMAIN=example.invalid \
+  -e AD_SERVERS=ad01.example.invalid:636 \
+  -e AD_BIND_NAME='CN=jenkins-bind,OU=Service Accounts,DC=example,DC=invalid' \
+  -e AD_BIND_PASSWORD='aus-secret-management' \
+  -e JENKINS_ADMIN_GROUP='Datenportal-Jenkins-Admins' \
+  -e JENKINS_AUTHENTICATED_GROUP='Datenportal-Jenkins-Users' \
+  -v jenkins-home:/var/jenkins_home \
+  datenportal-jenkins:local
 ```
 
 Der eigentliche Offline-Vertrag bleibt dabei:

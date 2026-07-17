@@ -11,7 +11,7 @@ Das Jenkins-Plugin wird im Schwester-Repo gebaut:
 
 ```bash
 cd ../jenkins-gretl-datenportal-plugin
-export JAVA_HOME="$HOME/.sdkman/candidates/java/21.0.10-tem"
+export JAVA_HOME="${JAVA21_HOME:-$HOME/.sdkman/candidates/java/current}"
 export PATH="$JAVA_HOME/bin:$PATH"
 mvn -ntp package
 ```
@@ -29,10 +29,15 @@ cd ../datenportal-jenkins-dev
 
 Das Skript:
 
-* kopiert die HPI als `.jpi` nach `jenkins-home/plugins/`;
+* kopiert die HPI als `.jpi` nach `$JENKINS_HOME_DIR/plugins/`;
 * entfernt eine alte `.hpi`-Variante;
 * entfernt ein moegliches entpacktes Plugin-Verzeichnis;
 * warnt, wenn auf Port `8080` bereits ein Jenkins-Prozess laeuft.
+
+Ohne Override ist `JENKINS_HOME_DIR` das bestehende `jenkins-home/`. Für ein
+anderes bestehendes Home kann `JENKINS_HOME_DIR` oder `JENKINS_HOME` gesetzt
+werden. Das Skript baut kein Offline-Bundle und verändert keine Jobs oder
+Build-Historien.
 
 == Warum ein voller Restart noetig ist
 
@@ -48,11 +53,33 @@ Pflichtablauf nach Plugin-Aenderungen:
 . Seed-Job erneut ausfuehren.
 . Datenportal-UI und einen generierten Job testen.
 
+Für den schnellen Loop nach einer reinen Plugin-Änderung:
+
+[source,bash]
+----
+./bin/install-gretl-datenportal-plugin.sh
+SKIP_OFFLINE_BUNDLE=1 JENKINS_HOME_DIR="$JENKINS_HOME_DIR" ./bin/start.sh
+----
+
+`SKIP_OFFLINE_BUNDLE=1` spart nur den Bundle-Bau. Der laufende Jenkins-Prozess
+muss trotzdem vollständig beendet und neu gestartet werden, damit Klassen und
+Jelly-Views neu geladen werden. Für ein isoliertes Home:
+
+[source,bash]
+----
+./bin/start-fresh.sh
+----
+
+Der Fresh-Start setzt eine zuvor gebaute HPI unter
+`../jenkins-gretl-datenportal-plugin/target/` voraus. Das Skript kopiert diese
+automatisch in das neue Home. Ein anderer Build kann mit
+`PLUGIN_HPI_SOURCE=/pfad/zur/plugin.hpi` angegeben werden.
+
 == Typischer End-to-End-Loop
 
 ```bash
 cd ../jenkins-gretl-datenportal-plugin
-export JAVA_HOME="$HOME/.sdkman/candidates/java/21.0.10-tem"
+export JAVA_HOME="${JAVA21_HOME:-$HOME/.sdkman/candidates/java/current}"
 export PATH="$JAVA_HOME/bin:$PATH"
 mvn -ntp package
 

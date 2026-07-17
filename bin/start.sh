@@ -3,16 +3,20 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 DOWNLOADS_DIR="$ROOT_DIR/downloads"
-JENKINS_HOME_DIR="$ROOT_DIR/jenkins-home"
+JENKINS_HOME_DIR="${JENKINS_HOME_DIR:-${JENKINS_HOME:-$ROOT_DIR/jenkins-home}}"
 JENKINS_WAR="$DOWNLOADS_DIR/jenkins.war"
 PLUGIN_MANAGER_JAR="$DOWNLOADS_DIR/jenkins-plugin-manager.jar"
 PLUGINS_TXT="$ROOT_DIR/plugins.txt"
 OFFLINE_BUNDLE_DIR="${OFFLINE_BUNDLE_DIR:-$ROOT_DIR/build/offline-bundle}"
 JENKINS_VERSION="${JENKINS_VERSION:-2.555.2}"
 PLUGIN_MANAGER_VERSION="${PLUGIN_MANAGER_VERSION:-2.14.0}"
+JENKINS_PORT="${JENKINS_PORT:-8080}"
+SKIP_OFFLINE_BUNDLE="${SKIP_OFFLINE_BUNDLE:-0}"
 
 THEMEN_REPO_DIR="${THEMEN_REPO_DIR:-/Users/stefan/sources/datenportal-themenrepo}"
-THEMEN_REPO_URL="${THEMEN_REPO_URL:-file://$THEMEN_REPO_DIR}"
+THEMEN_REPO_MODE="${THEMEN_REPO_MODE:-managed-git}"
+THEMEN_REPO_URL="${THEMEN_REPO_URL:-}"
+THEMEN_REPO_PATH="${THEMEN_REPO_PATH:-}"
 THEMEN_REPO_BRANCH="${THEMEN_REPO_BRANCH:-main}"
 source "$ROOT_DIR/bin/java-env.sh"
 
@@ -31,8 +35,34 @@ if [ ! -d "$THEMEN_REPO_DIR/.git" ]; then
   exit 1
 fi
 
-echo "Baue/Aktualisiere Offline-Bundle..."
-"$ROOT_DIR/bin/build-offline-bundle.sh" "$OFFLINE_BUNDLE_DIR"
+case "$THEMEN_REPO_MODE" in
+  managed-git)
+    if [ -z "$THEMEN_REPO_URL" ]; then
+      THEMEN_REPO_URL="file://$THEMEN_REPO_DIR"
+    fi
+    ;;
+  working-tree)
+    THEMEN_REPO_URL=""
+    if [ -z "$THEMEN_REPO_PATH" ]; then
+      THEMEN_REPO_PATH="$THEMEN_REPO_DIR"
+    fi
+    ;;
+  *)
+    echo "Unbekannter THEMEN_REPO_MODE: $THEMEN_REPO_MODE (erlaubt: managed-git, working-tree)" >&2
+    exit 1
+    ;;
+esac
+
+if [ "$SKIP_OFFLINE_BUNDLE" = "1" ]; then
+  if [ ! -d "$OFFLINE_BUNDLE_DIR/jars" ] || [ ! -d "$OFFLINE_BUNDLE_DIR/gradle-user-home" ]; then
+    echo "Offline-Bundle fehlt unter $OFFLINE_BUNDLE_DIR; SKIP_OFFLINE_BUNDLE=1 ist nicht moeglich." >&2
+    exit 1
+  fi
+  echo "Offline-Bundle wird wiederverwendet: $OFFLINE_BUNDLE_DIR"
+else
+  echo "Baue/Aktualisiere Offline-Bundle..."
+  "$ROOT_DIR/bin/build-offline-bundle.sh" "$OFFLINE_BUNDLE_DIR"
+fi
 
 activate_java_home "$JAVA21_HOME"
 
@@ -55,7 +85,9 @@ java -jar "$PLUGIN_MANAGER_JAR" \
 
 export JENKINS_HOME="$JENKINS_HOME_DIR"
 export CASC_JENKINS_CONFIG="$ROOT_DIR/casc/jenkins.yaml"
+export THEMEN_REPO_MODE
 export THEMEN_REPO_URL
+export THEMEN_REPO_PATH
 export THEMEN_REPO_BRANCH
 export DATENPORTAL_OFFLINE_JARS_DIR="$OFFLINE_BUNDLE_DIR/jars"
 export GRADLE_USER_HOME="$OFFLINE_BUNDLE_DIR/gradle-user-home"
@@ -71,9 +103,12 @@ fi
 
 echo
 echo "Starting Jenkins with java ${java_opts[*]} -jar jenkins.war ..."
-echo "URL:         http://localhost:8080"
+echo "URL:         http://localhost:${JENKINS_PORT}"
 echo "Login:       admin / admin"
+echo "Jenkins home: $JENKINS_HOME"
+echo "Repo mode:   $THEMEN_REPO_MODE"
 echo "Themes repo: $THEMEN_REPO_URL"
+echo "Repo path:   $THEMEN_REPO_PATH"
 echo "Branch:      $THEMEN_REPO_BRANCH"
 echo "Offline jars: $DATENPORTAL_OFFLINE_JARS_DIR"
 echo "Gradle home:  $GRADLE_USER_HOME"
@@ -81,4 +116,4 @@ echo "Gradle Java:  $GRADLE_JAVA_HOME_17"
 echo "Jenkins Java: $JAVA_HOME"
 echo
 
-exec java "${java_opts[@]}" -jar "$JENKINS_WAR" --httpPort=8080
+exec java "${java_opts[@]}" -jar "$JENKINS_WAR" --httpPort="$JENKINS_PORT"

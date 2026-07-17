@@ -74,6 +74,11 @@ Ein typischer Offline-Test besteht aus zwei Schritten:
 Die fachliche und build-seitige Verifikation des Wrapper-Vertrags ist im
 Themenrepo dokumentiert.
 
+Beim Image-Bau wird das Bundle aus `THEMEN_REPO_DIR` erzeugt. Das bedeutet nicht,
+dass dieser lokale Pfad oder sein Git-Verzeichnis im Produktionsimage landet:
+Das Runtime-Themenrepo wird erst über `THEMEN_REPO_URL` und
+`THEMEN_REPO_BRANCH` konfiguriert.
+
 == Weiterfuehrend
 
 * Gradle-Build-Vertrag und Offline-Koordinaten:

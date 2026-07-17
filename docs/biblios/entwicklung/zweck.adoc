@@ -21,6 +21,11 @@ Das Repo beantwortet aus technischer Sicht drei Fragen:
 . Wie wird eine lokal gebaute Plugin-HPI in diese Umgebung installiert und
   verifiziert?
 
+Für einen reproduzierbaren Neustart gehören außerdem ein wiederverwendbares
+Jenkins-Home und ein sicherer Fresh-Start unter `build/` zum Entwicklungssetup.
+Das Produktionsimage trennt diese Laufzeitdaten vom Image und erhält das
+Themenrepo erst durch die Runtime-Konfiguration.
+
 == Abgrenzung zu den anderen Repositories
 
 [cols="1,2,2",options="header"]

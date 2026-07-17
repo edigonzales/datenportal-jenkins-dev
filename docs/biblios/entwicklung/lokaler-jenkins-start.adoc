@@ -20,7 +20,12 @@ Optionale lokale Overrides:
 * `JAVA17_HOME`
 * `THEMEN_REPO_DIR`
 * `THEMEN_REPO_URL`
+* `THEMEN_REPO_PATH`
+* `THEMEN_REPO_MODE` (`managed-git` oder `working-tree`)
 * `THEMEN_REPO_BRANCH`
+* `JENKINS_HOME_DIR` beziehungsweise `JENKINS_HOME`
+* `JENKINS_PORT`
+* `SKIP_OFFLINE_BUNDLE=1`
 
 == Standardstart
 
@@ -36,6 +41,13 @@ cd ../datenportal-jenkins-dev
 . Jenkins-WAR und Plugin-Manager bei Bedarf herunterladen;
 . Jenkins-Plugins aus `plugins.txt` installieren oder aktualisieren;
 . Jenkins mit `casc/jenkins.yaml` starten.
+
+Ein reiner Plugin-Neustart kann das bereits gebaute Bundle wiederverwenden:
+
+[source,bash]
+----
+SKIP_OFFLINE_BUNDLE=1 ./bin/start.sh
+----
 
 Der Start exportiert dabei unter anderem:
 
@@ -98,20 +110,27 @@ Seeder-Teams synchronisiert.
 
 Nach einem frischen Jenkins-Home provisioniert das Plugin den Seed-Job
 `gretl-datenportal-seed` nach dem Start selbst. Er wird nicht mehr per JCasC
-erzeugt.
+erzeugt. Wenn ein Themenrepo konfiguriert ist, wird beim ersten Start ohne
+bisherigen Seed-Build automatisch ein initialer Seed-Lauf angestossen.
 
 Pflichtablauf:
 
-. Änderungen im Themenrepo committen und auf den von Jenkins konfigurierten
-  Branch pushen beziehungsweise dort bereitstellen. Der Seeder checkt den
-  committed Git-Stand aus; uncommitted Änderungen im lokalen Arbeitsverzeichnis
-  werden nicht verarbeitet.
+. Einen Repository-Modus wählen:
+
+** `managed-git`: Änderungen im Themenrepo committen und auf dem von Jenkins
+   konfigurierten Branch bereitstellen. Der Seeder aktualisiert seinen
+   Jenkins-internen Checkout und verwirft dort lokale Abweichungen.
+** `working-tree`: für lokale Entwicklung `THEMEN_REPO_MODE=working-tree` setzen.
+   Der Seed-Lauf kopiert den externen Arbeitsbaum inklusive uncommitteter und
+   untracked Änderungen in den Jenkins-internen Snapshot. `.git`, `.gradle`,
+   `build` und `.DS_Store` werden ausgeschlossen. Das externe Repo bleibt
+   unverändert; der Snapshot ändert sich erst beim nächsten Seed-Lauf.
 . `./bin/start.sh` ausführen.
 . Mit `admin / admin` anmelden.
-. Den automatisch angelegten Job `gretl-datenportal-seed` als `admin` manuell
-  starten oder auf den Cron-Lauf warten. Der erste Lauf benötigt den
-  Administrator, weil die Seeder-ACL erst danach aus dem Themenrepo geladen
-  wird.
+. Bei einem frischen Home den automatischen initialen Seed-Lauf abwarten. Bei
+  einem bestehenden Home oder nach einem fehlgeschlagenen Erstlauf kann
+  `gretl-datenportal-seed` weiterhin manuell gestartet werden; alternativ
+  wartet man auf den Cron-Lauf.
 . Danach mit `seed-user / seed`, `read-user / read` und `afu-user / afu` die
   Seeder- und Organisations-ACLs prüfen.
 . `/gretl-datenportal` öffnen und die erzeugten Organisationsjobs prüfen.

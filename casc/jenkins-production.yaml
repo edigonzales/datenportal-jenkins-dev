@@ -1,0 +1,46 @@
+jenkins:
+  systemMessage: "Datenportal Jenkins"
+  numExecutors: 2
+  mode: NORMAL
+  scmCheckoutRetryCount: 1
+
+  securityRealm:
+    activeDirectory:
+      domains:
+        - name: "${AD_DOMAIN}"
+          servers: "${AD_SERVERS}"
+      bindName: "${AD_BIND_NAME}"
+      bindPassword: "${AD_BIND_PASSWORD}"
+      groupLookupStrategy: "RECURSIVE"
+      removeIrrelevantGroups: false
+      customDomain: true
+      startTls: true
+      requireTLS: true
+
+  authorizationStrategy:
+    projectMatrix:
+      entries:
+        - group:
+            name: "${JENKINS_ADMIN_GROUP}"
+            permissions:
+              - "Overall/Administer"
+        - group:
+            name: "${JENKINS_AUTHENTICATED_GROUP}"
+            permissions:
+              - "Overall/Read"
+
+unclassified:
+  location:
+    url: "${JENKINS_URL}"
+    adminAddress: "${JENKINS_ADMIN_ADDRESS}"
+  gretlDatenportalJobs:
+    displayName: "GRETL Datenportal Jobs"
+    urlName: "gretl-datenportal"
+    topicRepositoryMode: "managed-git"
+    topicRepositoryUrl: "${THEMEN_REPO_URL}"
+    topicRepositoryBranch: "${THEMEN_REPO_BRANCH}"
+    topicRepositoryPath: ""
+    seedJobAutoCreate: true
+    seedJobCron: "H/15 * * * *"
+    seedJobBuildsToKeep: 20
+    seedJobOperatorsTeam: "gretl-datenportal-seed-operators"

@@ -1,5 +1,5 @@
 jenkins:
-  systemMessage: "Local GRETL Datenportal Jenkins"
+  systemMessage: "Datenportal Jenkins"
   numExecutors: 2
   mode: NORMAL
   scmCheckoutRetryCount: 1
@@ -50,9 +50,10 @@ unclassified:
   gretlDatenportalJobs:
     displayName: "GRETL Datenportal Jobs"
     urlName: "gretl-datenportal"
+    topicRepositoryMode: "${THEMEN_REPO_MODE}"
     topicRepositoryUrl: "${THEMEN_REPO_URL}"
     topicRepositoryBranch: "${THEMEN_REPO_BRANCH}"
-    topicRepositoryPath: ""
+    topicRepositoryPath: "${THEMEN_REPO_PATH}"
     seedJobAutoCreate: true
     seedJobCron: "H/15 * * * *"
     seedJobBuildsToKeep: 20

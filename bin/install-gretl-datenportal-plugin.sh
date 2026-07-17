@@ -7,11 +7,12 @@ JENKINS_DEV_HOME="${JENKINS_DEV_HOME:-$DEFAULT_JENKINS_DEV_HOME}"
 PLUGIN_REPO="${PLUGIN_REPO:-/Users/stefan/sources/jenkins-gretl-datenportal-plugin}"
 HPI_SOURCE="${1:-$PLUGIN_REPO/target/jenkins-gretl-datenportal-plugin.hpi}"
 
-PLUGINS_DIR="$JENKINS_DEV_HOME/jenkins-home/plugins"
+JENKINS_HOME_DIR="${JENKINS_HOME_DIR:-${JENKINS_HOME:-$JENKINS_DEV_HOME/jenkins-home}}"
+PLUGINS_DIR="$JENKINS_HOME_DIR/plugins"
 PLUGIN_TARGET="$PLUGINS_DIR/jenkins-gretl-datenportal-plugin.jpi"
 PLUGIN_LEGACY_TARGET="$PLUGINS_DIR/jenkins-gretl-datenportal-plugin.hpi"
 PLUGIN_EXPLODED_DIR="$PLUGINS_DIR/jenkins-gretl-datenportal-plugin"
-PORT=8080
+PORT="${JENKINS_PORT:-8080}"
 
 format_mtime() {
   local file_path="$1"
@@ -61,7 +62,7 @@ warn_if_jenkins_running() {
 if [ ! -f "$HPI_SOURCE" ]; then
   echo "HPI not found: $HPI_SOURCE" >&2
   echo "Build it first, for example:" >&2
-  echo "  cd $PLUGIN_REPO && export JAVA_HOME=\"\$HOME/.sdkman/candidates/java/21.0.10-tem\" && export PATH=\"\$JAVA_HOME/bin:\$PATH\" && mvn -ntp package" >&2
+  echo "  cd $PLUGIN_REPO && export JAVA_HOME=\"\${JAVA21_HOME:-\$HOME/.sdkman/candidates/java/current}\" && export PATH=\"\$JAVA_HOME/bin:\$PATH\" && mvn -ntp package" >&2
   exit 1
 fi
 
@@ -87,4 +88,4 @@ echo
 echo "Restart Jenkins completely if it is already running."
 echo "A simple file copy is not enough once Jenkins has already loaded the plugin."
 echo "Start local Jenkins with:"
-echo "  cd $JENKINS_DEV_HOME && ./bin/start.sh"
+echo "  cd $JENKINS_DEV_HOME && JENKINS_HOME_DIR='$JENKINS_HOME_DIR' ./bin/start.sh"

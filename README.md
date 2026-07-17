@@ -34,11 +34,28 @@ cd ../datenportal-jenkins-dev
 Jenkins-Plugins und startet danach Jenkins mit Java 21. Fuer GRETL und Gradle
 exportiert das Skript separat Java 17.
 
+Das vorhandene Home wird dabei wiederverwendet. Fuer einen isolierten Neustart
+mit leerer Konfiguration:
+
+```bash
+cd ../datenportal-jenkins-dev
+./bin/start-fresh.sh
+```
+
+Das Skript setzt eine zuvor gebaute Plugin-HPI unter
+`../jenkins-gretl-datenportal-plugin/target/` voraus und legt sie automatisch im
+frischen Home ab. Ein abweichender Build kann mit
+`PLUGIN_HPI_SOURCE=/pfad/zur/plugin.hpi` angegeben werden.
+
+`start-fresh.sh` leert ausschliesslich ein Home unter `build/`; das versionierte
+`jenkins-home/` bleibt erhalten. Ein anderes bestehendes Home kann mit
+`JENKINS_HOME_DIR=/pfad/zum/home ./bin/start.sh` verwendet werden.
+
 ### Plugin aus dem Schwester-Repo installieren
 
 ```bash
 cd ../jenkins-gretl-datenportal-plugin
-export JAVA_HOME="$HOME/.sdkman/candidates/java/21.0.10-tem"
+export JAVA_HOME="${JAVA21_HOME:-$HOME/.sdkman/candidates/java/current}"
 export PATH="$JAVA_HOME/bin:$PATH"
 mvn -ntp package
 
@@ -85,10 +102,21 @@ aus der Teams-Datei synchronisiert. Die Teammitglieder werden über ihre
 Jenkins-Benutzer-IDs aufgelöst; in einer produktiven Umgebung müssen diese IDs
 zur konfigurierten AD-/LDAP-/Entra-Authentisierungsquelle passen.
 
-Der Seed-Lauf verarbeitet den committed Git-Stand des konfigurierten Branches.
-Uncommitted Änderungen im Themenrepo werden nicht verarbeitet. Für einen
-lokalen Test daher: Änderungen committen, `./bin/start.sh` ausführen, den
-Seed-Job zuerst als `admin / admin` starten und danach die ACLs mit
+Der Seed-Lauf kennt zwei Modi. `managed-git` ist der produktionsnahe Default:
+Jenkins aktualisiert seinen internen Checkout mit dem committed Stand des
+konfigurierten Branches. `working-tree` ist nur für lokale Entwicklung gedacht:
+Beim Seed-Lauf wird der externe Arbeitsbaum inklusive uncommitteter und
+untracked Änderungen in einen Jenkins-internen Snapshot kopiert. Das externe
+Themenrepo wird dabei nicht verändert; der Snapshot bleibt bis zum nächsten
+Seed-Lauf unverändert. Für einen lokalen Test mit diesem Modus:
+
+```bash
+THEMEN_REPO_MODE=working-tree ./bin/start.sh
+```
+
+Im produktionsnahen Modus müssen Änderungen committen und auf dem konfigurierten
+Branch bereitgestellt werden. Danach den Seed-Job zuerst als `admin / admin`
+starten und die ACLs mit
 `seed-user / seed`, `read-user / read` und `afu-user / afu` prüfen. Die
 vollständige Anleitung steht in
 `docs/biblios/entwicklung/lokaler-jenkins-start.adoc`.
@@ -109,8 +137,11 @@ cd ../datenportal-jenkins-dev
 ./bin/build-image.sh
 ```
 
-Das Image enthaelt den lokalen Jenkins-Controller, das vorbereitete
-Offline-Bundle, das Themenrepo als Git-Quelle und das lokal gebaute Plugin.
+Das Produktionsimage enthält den Jenkins-Controller, Java 17 für GRETL, das
+vorbereitete Offline-Bundle und das lokal gebaute Plugin. Das Themenrepo wird
+nicht in das Image kopiert, sondern zur Laufzeit über `THEMEN_REPO_URL` und
+`THEMEN_REPO_BRANCH` gesetzt. Für das Bauen des Offline-Bundles dient
+`THEMEN_REPO_DIR` weiterhin als lokale Build-Quelle.
 
 ## Langform-Doku
 
