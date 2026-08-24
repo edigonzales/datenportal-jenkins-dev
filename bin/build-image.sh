@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 THEMEN_REPO_DIR="${THEMEN_REPO_DIR:-/Users/stefan/sources/datenportal-themenrepo}"
-PLUGIN_REPO="${PLUGIN_REPO:-/Users/stefan/sources/jenkins-gretl-datenportal-plugin}"
+PLUGIN_REPO="${PLUGIN_REPO:-$ROOT_DIR/../datenportal-jenkins-gretl-plugin}"
 PLUGIN_HPI_SOURCE="${PLUGIN_HPI_SOURCE:-$PLUGIN_REPO/target/jenkins-gretl-datenportal-plugin.hpi}"
 OFFLINE_BUNDLE_DIR="${OFFLINE_BUNDLE_DIR:-$ROOT_DIR/build/offline-bundle}"
 DOCKER_CONTEXT_DIR="$ROOT_DIR/build/docker-context"

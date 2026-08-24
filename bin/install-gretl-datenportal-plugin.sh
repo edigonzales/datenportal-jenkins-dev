@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DEFAULT_JENKINS_DEV_HOME="$(cd "$SCRIPT_DIR/.." && pwd)"
 JENKINS_DEV_HOME="${JENKINS_DEV_HOME:-$DEFAULT_JENKINS_DEV_HOME}"
-PLUGIN_REPO="${PLUGIN_REPO:-/Users/stefan/sources/jenkins-gretl-datenportal-plugin}"
+PLUGIN_REPO="${PLUGIN_REPO:-$DEFAULT_JENKINS_DEV_HOME/../datenportal-jenkins-gretl-plugin}"
 HPI_SOURCE="${1:-$PLUGIN_REPO/target/jenkins-gretl-datenportal-plugin.hpi}"
 
 JENKINS_HOME_DIR="${JENKINS_HOME_DIR:-${JENKINS_HOME:-$JENKINS_DEV_HOME/jenkins-home}}"

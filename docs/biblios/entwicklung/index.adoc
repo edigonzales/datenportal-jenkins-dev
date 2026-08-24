@@ -31,7 +31,7 @@ Nicht behandelt werden hier:
 * die Implementierungsdetails des Jenkins-Plugins.
 
 Diese Themen gehoeren in die Repositories `datenportal-themenrepo` und
-`jenkins-gretl-datenportal-plugin`.
+`datenportal-jenkins-gretl-plugin`.
 
 == Kurzfassung
 
@@ -47,4 +47,4 @@ Ausfuehrungsumgebung. Es verbindet drei Dinge:
 * Der fachliche Vertrag liegt im Repo
   link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo].
 * Scanner-, UI- und Seed-Logik liegen im Repo
-  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin].
+  link:https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin[datenportal-jenkins-gretl-plugin].

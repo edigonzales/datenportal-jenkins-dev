@@ -40,7 +40,7 @@ Themenrepo erst durch die Runtime-Konfiguration.
 | Organisationsstruktur, Datensaetze, Shared Defaults, Gradle-Build-Vertrag
 | Nein
 
-| `jenkins-gretl-datenportal-plugin`
+| `datenportal-jenkins-gretl-plugin`
 | Scanner, Startformular, Berechtigungen, Seed-Builder, Job-Generierung
 | Nein
 |===
@@ -61,4 +61,4 @@ plugin-interne Regeln:
 * Fachlicher Vertrag:
   link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo]
 * Plugin-Implementierung:
-  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin]
+  link:https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin[datenportal-jenkins-gretl-plugin]

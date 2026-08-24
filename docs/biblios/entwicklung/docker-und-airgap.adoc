@@ -81,5 +81,5 @@ Der eigentliche Offline-Vertrag bleibt dabei:
 * Die Build-Koordinaten fuer das Offline-Bundle liegen im Repo
   link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo].
 * Die generierten Jobs, die spaeter gegen dieses Image laufen, sind im Repo
-  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin]
+  link:https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin[datenportal-jenkins-gretl-plugin]
   beschrieben.

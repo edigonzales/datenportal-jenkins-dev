@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 FRESH_JENKINS_HOME_DIR="${FRESH_JENKINS_HOME_DIR:-$ROOT_DIR/build/jenkins-home-fresh}"
-PLUGIN_REPO="${PLUGIN_REPO:-$ROOT_DIR/../jenkins-gretl-datenportal-plugin}"
+PLUGIN_REPO="${PLUGIN_REPO:-$ROOT_DIR/../datenportal-jenkins-gretl-plugin}"
 PLUGIN_HPI_SOURCE="${PLUGIN_HPI_SOURCE:-$PLUGIN_REPO/target/jenkins-gretl-datenportal-plugin.hpi}"
 
 case "$FRESH_JENKINS_HOME_DIR" in

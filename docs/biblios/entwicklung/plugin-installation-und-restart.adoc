@@ -10,7 +10,7 @@ toc::[]
 Das Jenkins-Plugin wird im Schwester-Repo gebaut:
 
 ```bash
-cd ../jenkins-gretl-datenportal-plugin
+cd ../datenportal-jenkins-gretl-plugin
 export JAVA_HOME="${JAVA21_HOME:-$HOME/.sdkman/candidates/java/current}"
 export PATH="$JAVA_HOME/bin:$PATH"
 mvn -ntp package
@@ -18,7 +18,7 @@ mvn -ntp package
 
 Das Ergebnis ist:
 
-* `../jenkins-gretl-datenportal-plugin/target/jenkins-gretl-datenportal-plugin.hpi`
+* `../datenportal-jenkins-gretl-plugin/target/jenkins-gretl-datenportal-plugin.hpi`
 
 == Plugin lokal installieren
 
@@ -71,14 +71,14 @@ Jelly-Views neu geladen werden. Für ein isoliertes Home:
 ----
 
 Der Fresh-Start setzt eine zuvor gebaute HPI unter
-`../jenkins-gretl-datenportal-plugin/target/` voraus. Das Skript kopiert diese
+`../datenportal-jenkins-gretl-plugin/target/` voraus. Das Skript kopiert diese
 automatisch in das neue Home. Ein anderer Build kann mit
 `PLUGIN_HPI_SOURCE=/pfad/zur/plugin.hpi` angegeben werden.
 
 == Typischer End-to-End-Loop
 
 ```bash
-cd ../jenkins-gretl-datenportal-plugin
+cd ../datenportal-jenkins-gretl-plugin
 export JAVA_HOME="${JAVA21_HOME:-$HOME/.sdkman/candidates/java/current}"
 export PATH="$JAVA_HOME/bin:$PATH"
 mvn -ntp package
@@ -100,6 +100,6 @@ Danach in Jenkins:
 == Weiterfuehrend
 
 * Plugin-Implementierung und fachliche Render-/Validierungslogik:
-  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin]
+  link:https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin[datenportal-jenkins-gretl-plugin]
 * Themenrepo-Vertrag fuer Organisationen, Datensaetze und Defaults:
   link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo]

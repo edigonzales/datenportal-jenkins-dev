@@ -84,4 +84,4 @@ Das Runtime-Themenrepo wird erst über `THEMEN_REPO_URL` und
 * Gradle-Build-Vertrag und Offline-Koordinaten:
   link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo]
 * Pipeline- und Job-Logik, die dieses Bundle verbraucht:
-  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin]
+  link:https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin[datenportal-jenkins-gretl-plugin]

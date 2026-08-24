@@ -141,4 +141,4 @@ fachlichen Vertrag des Datenportals.
 * Themenrepo und Build-Vertrag:
   link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo]
 * Plugin-Konfiguration, Scanner und Seed-Logik:
-  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin]
+  link:https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin[datenportal-jenkins-gretl-plugin]

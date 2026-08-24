@@ -19,7 +19,7 @@ Nicht hierher gehoeren:
 - der fachliche Vertrag des Themenrepos:
   [datenportal-themenrepo](https://codeberg.org/edigonzales/datenportal-themenrepo)
 - die Implementierung des Jenkins-Plugins:
-  [jenkins-gretl-datenportal-plugin](https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin)
+  [datenportal-jenkins-gretl-plugin](https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin)
 
 ## Zentrale Workflows
 
@@ -43,7 +43,7 @@ cd ../datenportal-jenkins-dev
 ```
 
 Das Skript setzt eine zuvor gebaute Plugin-HPI unter
-`../jenkins-gretl-datenportal-plugin/target/` voraus und legt sie automatisch im
+`../datenportal-jenkins-gretl-plugin/target/` voraus und legt sie automatisch im
 frischen Home ab. Ein abweichender Build kann mit
 `PLUGIN_HPI_SOURCE=/pfad/zur/plugin.hpi` angegeben werden.
 
@@ -54,7 +54,7 @@ frischen Home ab. Ein abweichender Build kann mit
 ### Plugin aus dem Schwester-Repo installieren
 
 ```bash
-cd ../jenkins-gretl-datenportal-plugin
+cd ../datenportal-jenkins-gretl-plugin
 export JAVA_HOME="${JAVA21_HOME:-$HOME/.sdkman/candidates/java/current}"
 export PATH="$JAVA_HOME/bin:$PATH"
 mvn -ntp package
@@ -154,6 +154,6 @@ Die technische Langform-Doku liegt unter
   ist die kanonische Doku fuer Organisationsstruktur, Datensaetze,
   `gretl-datenportal-job.yaml`, `shared/gretl-datenportal-teams.yaml`,
   `shared/Jenkinsfile` und den Gradle-Build-Vertrag.
-- [jenkins-gretl-datenportal-plugin](https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin)
+- [datenportal-jenkins-gretl-plugin](https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin)
   ist die kanonische Doku fuer Scanner, Startformular, Rechtepruefung,
   Seed-Builder und generierte Jenkins-Jobs.

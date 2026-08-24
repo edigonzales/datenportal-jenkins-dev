@@ -160,5 +160,5 @@ gehoert die strukturierte Erklaerung ins Themenrepo.
   link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo]
   beschrieben.
 * Die Logik hinter Seed-Job, Scanner und generierten Jobs ist im Repo
-  link:https://codeberg.org/edigonzales/jenkins-gretl-datenportal-plugin[jenkins-gretl-datenportal-plugin]
+  link:https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin[datenportal-jenkins-gretl-plugin]
   beschrieben.
