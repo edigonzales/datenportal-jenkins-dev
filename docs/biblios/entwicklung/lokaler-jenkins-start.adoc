@@ -78,9 +78,8 @@ Für Berechtigungstests stehen zusätzlich diese lokalen Konten zur Verfügung:
 * `read-user / read`: darf freigegebene Organisationsjobs lesen;
 * `afu-user / afu`: darf den AFU-Job lesen und starten;
 * `statistikdienst-user / statistikdienst`: Benutzer und Team sind für das
-  Statistikdienst-Fixture vorbereitet. Mit der aktuellen Datei
-  `statistikdienst/XXXXXgretl-datenportal-job.yaml` wird jedoch kein
-  Statistikdienst-Job erzeugt.
+  Statistikdienst-Fixture vorbereitet; aktuell wird daraus jedoch kein Job
+  erzeugt.
 
 Die Konten erhalten keine globalen `Item`-Rechte. Die tatsächlichen Jobrechte
 werden aus `shared/gretl-datenportal-teams.yaml` des Themenrepos synchronisiert.
@@ -135,11 +134,13 @@ Pflichtablauf:
   Seeder- und Organisations-ACLs prüfen.
 . `/gretl-datenportal` öffnen und die erzeugten Organisationsjobs prüfen.
 
-Der aktuelle lokale Statistikdienst-Fixture wird dabei nicht als
-Organisationskonfiguration erkannt: Der Dateiname enthält den Marker
-`XXXXX` statt exakt `gretl-datenportal-job.yaml`. Deshalb entsteht derzeit
-kein `gretl-datenportal-statistikdienst`; die Aktivierung dieses Fixtures ist
-nicht Teil dieser Dokumentationsänderung.
+Das aktuelle lokale Statistikdienst-Fixture wird dabei nicht als
+Organisationskonfiguration erkannt, weil seine Konfigurationsdatei nicht der
+erforderlichen Dateinamenskonvention entspricht. Der Scanner berücksichtigt
+nur Dateien mit dem exakt vorgesehenen Namen `gretl-datenportal-job.yaml`;
+abweichende Dateinamen werden ignoriert. Deshalb entsteht derzeit kein
+`gretl-datenportal-statistikdienst`. Die Aktivierung dieses Fixtures ist nicht
+Teil dieser Dokumentationsänderung.
 
 Die generierten Jobs unter `jenkins-home/jobs` bleiben bewusst lokal und sind
 nicht versioniert. Ein bestehender lokaler Job
