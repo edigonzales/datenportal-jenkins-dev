@@ -47,14 +47,32 @@ toc::[]
 | `JENKINS_VERSION`
 | Version des lokal geladenen Jenkins-WARs und Standard-Basisimages
 
+| `JENKINS_RUNTIME_MODE`
+| `dev` für die lokale JCasC oder `production` für die AD-/Deployment-Konfiguration
+
 | `PLUGIN_MANAGER_VERSION`
 | Version des Jenkins Plugin Installation Manager
 
 | `IMAGE_NAME`
 | Zielname des lokal gebauten Docker-Images
 
+| `IMAGE_VERSION`
+| OCI-Image-Version als Label; der lokale Default ist `local`
+
 | `JENKINS_IMAGE`
 | Basisimage fuer `bin/build-image.sh`
+
+| `PLUGIN_SOURCE`
+| `local`, `maven` oder `auto`; Quelle des beim Image-Bau installierten HPI
+
+| `PLUGIN_REPO`
+| lokaler Checkout des Jenkins-Plugins für `PLUGIN_SOURCE=local|auto`
+
+| `PLUGIN_GROUP`, `PLUGIN_ARTIFACT`, `PLUGIN_VERSION`
+| Maven-Koordinaten des Jenkins-Plugins für `PLUGIN_SOURCE=maven|auto`
+
+| `PLUGIN_REPOSITORY_URL`
+| Maven-Repository für das Jenkins-Plugin
 |===
 
 Fuer das Produktionsimage kommen zusaetzlich `JENKINS_URL`,

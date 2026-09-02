@@ -137,11 +137,42 @@ cd ../datenportal-jenkins-dev
 ./bin/build-image.sh
 ```
 
-Das Produktionsimage enthält den Jenkins-Controller, Java 17 für GRETL, das
-vorbereitete Offline-Bundle und das lokal gebaute Plugin. Das Themenrepo wird
-nicht in das Image kopiert, sondern zur Laufzeit über `THEMEN_REPO_URL` und
-`THEMEN_REPO_BRANCH` gesetzt. Für das Bauen des Offline-Bundles dient
-`THEMEN_REPO_DIR` weiterhin als lokale Build-Quelle.
+Das gemeinsame Image heisst `datenportal-jenkins`. Der lokale Default-Tag ist
+`datenportal-jenkins:local`; für die Registry kann `IMAGE_NAME` und
+`IMAGE_VERSION` gesetzt werden. Es unterstützt die Laufzeitmodi
+`JENKINS_RUNTIME_MODE=dev` und `JENKINS_RUNTIME_MODE=production`. Im
+Produktionsmodus prüft der Entrypoint die AD- und Deployment-Variablen; im
+Dev-Modus wird die lokale JCasC von aussen gemountet.
+
+Das Image enthält den Jenkins-Controller, Java 17 für GRETL, das vorbereitete
+Offline-Bundle und das beim Image-Bau installierte Datenportal-Plugin. Das
+Themenrepo wird nicht in das Image kopiert, sondern zur Laufzeit über
+`THEMEN_REPO_URL`/`THEMEN_REPO_PATH` und `THEMEN_REPO_BRANCH` gesetzt. Für das
+Bauen des Offline-Bundles dient `THEMEN_REPO_DIR` weiterhin als lokale
+Build-Quelle.
+
+Die Pluginquelle ist konfigurierbar:
+
+* `PLUGIN_SOURCE=local` baut den Checkout unter `PLUGIN_REPO` und installiert
+  dessen HPI;
+* `PLUGIN_SOURCE=maven` löst `PLUGIN_GROUP`, `PLUGIN_ARTIFACT` und
+  `PLUGIN_VERSION` aus `PLUGIN_REPOSITORY_URL` auf;
+* `PLUGIN_SOURCE=auto` bevorzugt den lokalen Checkout und verwendet sonst
+  Maven.
+
+Beispiel für den veröffentlichten Snapshot:
+
+```bash
+PLUGIN_SOURCE=maven \
+PLUGIN_VERSION=0.1.0-SNAPSHOT \
+PLUGIN_REPOSITORY_URL=https://jars.interlis.guru/snapshots \
+./bin/build-image.sh
+```
+
+Das HPI wird ausschliesslich beim Image-Bau installiert. GRETL `5.0.0-SNAPSHOT`
+und die übrigen Gradle-/GRETL-Artefakte werden beim Offline-Bundle-Bau aus den
+im Themenrepo definierten Repositories geladen und zur Laufzeit offline
+verwendet.
 
 ## Langform-Doku
 

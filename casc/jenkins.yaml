@@ -45,7 +45,7 @@ jenkins:
 
 unclassified:
   location:
-    url: "http://localhost:8080/"
+    url: "${JENKINS_URL}"
     adminAddress: "Local Jenkins <noreply@localhost>"
   gretlDatenportalJobs:
     displayName: "GRETL Datenportal Jobs"

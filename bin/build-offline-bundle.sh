@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-THEMEN_REPO_DIR="${THEMEN_REPO_DIR:-/Users/stefan/sources/datenportal-themenrepo}"
+THEMEN_REPO_DIR="${THEMEN_REPO_DIR:-$ROOT_DIR/../datenportal-themenrepo}"
 OFFLINE_BUNDLE_DIR="${1:-${OFFLINE_BUNDLE_DIR:-$ROOT_DIR/build/offline-bundle}}"
 source "$ROOT_DIR/bin/java-env.sh"
 

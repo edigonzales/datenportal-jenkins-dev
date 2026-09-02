@@ -12,9 +12,10 @@ cd ../datenportal-jenkins-dev
 ./bin/build-image.sh
 ```
 
-Default-Image-Name:
+Gemeinsamer Image-Vertrag:
 
-* `datenportal-jenkins:local`
+* Registry: `sogis/datenportal-jenkins:<image-version>`
+* lokaler Build: `datenportal-jenkins:local`
 
 Default-Basisimage:
 
@@ -27,7 +28,8 @@ Der Image-Build staged:
 * `plugins.txt`
 * `casc/jenkins-production.yaml` als `jenkins.yaml`
 * das vorbereitete Offline-Bundle
-* das lokal gebaute `jenkins-gretl-datenportal-plugin.hpi`
+* das aus `PLUGIN_SOURCE` aufgeloeste
+  `jenkins-gretl-datenportal-plugin.hpi`
 * das EntryPoint-Skript
 
 Das Themenrepo wird bewusst nicht in das Image kopiert. `THEMEN_REPO_DIR` ist
@@ -41,6 +43,17 @@ Entwicklung beschränkt. Das Image verwendet `casc/jenkins-production.yaml` mit
 Active Directory, verpflichtendem StartTLS und projektbezogener
 Matrix-Autorisierung. Der Java-Truststore wird von der Deployment-Umgebung über
 `JAVA_OPTS` beziehungsweise `JENKINS_JAVA_OPTS` bereitgestellt.
+
+Das Image ist für beide Betriebsarten identisch. `JENKINS_RUNTIME_MODE=dev`
+überspringt die Produktionsprüfungen des Entrypoints und erwartet eine von
+aussen gemountete lokale JCasC. `JENKINS_RUNTIME_MODE=production` aktiviert die
+Prüfung der AD- und Deployment-Variablen. Die lokale JCasC wird nie in das
+allgemeine Registry-Image eingebettet.
+
+Das Plugin kann mit `PLUGIN_SOURCE=local|maven|auto` aus dem lokalen Checkout
+oder aus dem Maven-Repository `PLUGIN_REPOSITORY_URL` bezogen werden. Beim
+Image-Bau wird daraus eine HPI installiert; beim Containerstart findet keine
+Plugin-Auflösung statt.
 
 == Java-Laufzeiten im Image
 
