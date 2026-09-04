@@ -18,8 +18,12 @@ LABEL org.opencontainers.image.title="datenportal-jenkins" \
 
 USER root
 
+ENV TZ=Europe/Zurich
+
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl git tar \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates curl git tar tzdata \
+    && ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime \
+    && echo "${TZ}" > /etc/timezone \
     && rm -rf /var/lib/apt/lists/* \
     && case "$TARGETARCH" in \
          amd64) adoptium_arch='x64' ;; \

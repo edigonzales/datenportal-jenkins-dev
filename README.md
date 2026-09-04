@@ -153,6 +153,9 @@ Themenrepo wird nicht in das Image kopiert, sondern zur Laufzeit über
 Bauen des Offline-Bundles dient `THEMEN_REPO_DIR` weiterhin als lokale
 Build-Quelle.
 
+Das Image verwendet `Europe/Zurich` als Systemzeitzone. Damit verwenden Jenkins,
+Gradle und Konsolenlogs automatisch CET beziehungsweise CEST.
+
 Die Pluginquelle ist konfigurierbar:
 
 * `PLUGIN_SOURCE=local` baut den Checkout unter `PLUGIN_REPO` und installiert
