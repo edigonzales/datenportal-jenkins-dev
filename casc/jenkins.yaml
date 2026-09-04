@@ -14,8 +14,10 @@ jenkins:
           password: "seed"
         - id: "read-user"
           password: "read"
-        - id: "afu-user"
-          password: "afu"
+        - id: "agi-user"
+          password: "agi"
+        - id: "mfk-user"
+          password: "mfk"
         - id: "statistikdienst-user"
           password: "statistikdienst"
 
@@ -35,7 +37,11 @@ jenkins:
             permissions:
               - "Overall/Read"
         - user:
-            name: "afu-user"
+            name: "agi-user"
+            permissions:
+              - "Overall/Read"
+        - user:
+            name: "mfk-user"
             permissions:
               - "Overall/Read"
         - user:

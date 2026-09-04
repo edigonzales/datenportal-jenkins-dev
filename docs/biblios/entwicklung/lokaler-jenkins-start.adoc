@@ -76,10 +76,10 @@ Für Berechtigungstests stehen zusätzlich diese lokalen Konten zur Verfügung:
 
 * `seed-user / seed`: darf den Seeder-Job lesen und starten;
 * `read-user / read`: darf freigegebene Organisationsjobs lesen;
-* `afu-user / afu`: darf den AFU-Job lesen und starten;
-* `statistikdienst-user / statistikdienst`: Benutzer und Team sind für das
-  Statistikdienst-Fixture vorbereitet; aktuell wird daraus jedoch kein Job
-  erzeugt.
+* `agi-user / agi`: darf den AGI-Job lesen und starten;
+* `mfk-user / mfk`: darf den MFK-Job lesen und starten;
+* `statistikdienst-user / statistikdienst`: darf den Statistikdienst-Job
+  lesen und starten.
 
 Die Konten erhalten keine globalen `Item`-Rechte. Die tatsächlichen Jobrechte
 werden aus `shared/gretl-datenportal-teams.yaml` des Themenrepos synchronisiert.
@@ -97,7 +97,8 @@ werden:
   nicht konfigurieren;
 * `read-user / read` sieht freigegebene Organisationsjobs, darf sie aber nicht
   bauen;
-* `afu-user / afu` sieht den AFU-Job und darf ihn bauen;
+* `agi-user / agi`, `mfk-user / mfk` und `statistikdienst-user / statistikdienst`
+  sehen jeweils nur ihren Organisationsjob und dürfen ihn bauen;
 * nicht berechtigte Benutzer sehen die jeweiligen Jobs nicht und können sie
   auch nicht über die Jenkins-API starten.
 
@@ -130,17 +131,10 @@ Pflichtablauf:
   einem bestehenden Home oder nach einem fehlgeschlagenen Erstlauf kann
   `gretl-datenportal-seed` weiterhin manuell gestartet werden; alternativ
   wartet man auf den Cron-Lauf.
-. Danach mit `seed-user / seed`, `read-user / read` und `afu-user / afu` die
-  Seeder- und Organisations-ACLs prüfen.
+. Danach mit `seed-user / seed`, `read-user / read`, `agi-user / agi`,
+  `mfk-user / mfk` und `statistikdienst-user / statistikdienst` die Seeder-
+  und Organisations-ACLs prüfen.
 . `/gretl-datenportal` öffnen und die erzeugten Organisationsjobs prüfen.
-
-Das aktuelle lokale Statistikdienst-Fixture wird dabei nicht als
-Organisationskonfiguration erkannt, weil seine Konfigurationsdatei nicht der
-erforderlichen Dateinamenskonvention entspricht. Der Scanner berücksichtigt
-nur Dateien mit dem exakt vorgesehenen Namen `gretl-datenportal-job.yaml`;
-abweichende Dateinamen werden ignoriert. Deshalb entsteht derzeit kein
-`gretl-datenportal-statistikdienst`. Die Aktivierung dieses Fixtures ist nicht
-Teil dieser Dokumentationsänderung.
 
 Die generierten Jobs unter `jenkins-home/jobs` bleiben bewusst lokal und sind
 nicht versioniert. Ein bestehender lokaler Job

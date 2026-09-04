@@ -87,8 +87,9 @@ Autorisierung aus `matrix-auth`. Die Testkonten sind:
 | `admin` | `admin` | Jenkins-Administrator und Bootstrap |
 | `seed-user` | `seed` | Mitglied des konfigurierten Seeder-Teams |
 | `read-user` | `read` | Nur Lesezugriff auf Organisationen |
-| `afu-user` | `afu` | Lesen und Bauen des AFU-Jobs |
-| `statistikdienst-user` | `statistikdienst` | Für das Statistikdienst-Fixture vorbereitet; aktuell wird daraus kein Job erzeugt |
+| `agi-user` | `agi` | Lesen und Bauen des AGI-Jobs |
+| `mfk-user` | `mfk` | Lesen und Bauen des MFK-Jobs |
+| `statistikdienst-user` | `statistikdienst` | Lesen und Bauen des Statistikdienst-Jobs |
 
 Für lokale Tests ist keine AD-/LDAP-Umgebung nötig: JCasC verwendet den lokalen
 Security-Realm und legt diese Konten beim Start an. Normale Benutzer erhalten
@@ -117,7 +118,8 @@ THEMEN_REPO_MODE=working-tree ./bin/start.sh
 Im produktionsnahen Modus müssen Änderungen committen und auf dem konfigurierten
 Branch bereitgestellt werden. Danach den Seed-Job zuerst als `admin / admin`
 starten und die ACLs mit
-`seed-user / seed`, `read-user / read` und `afu-user / afu` prüfen. Die
+`seed-user / seed`, `read-user / read`, `agi-user / agi`, `mfk-user / mfk`
+und `statistikdienst-user / statistikdienst` prüfen. Die
 vollständige Anleitung steht in
 `docs/biblios/entwicklung/lokaler-jenkins-start.adoc`.
 
