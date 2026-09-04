@@ -73,6 +73,24 @@ toc::[]
 
 | `PLUGIN_REPOSITORY_URL`
 | Maven-Repository für das Jenkins-Plugin
+
+| `ORG_GRADLE_PROJECT_s3Endpoint`
+| S3-Endpunkt für GRETL-Upload-Tasks
+
+| `ORG_GRADLE_PROJECT_s3Region`
+| S3-Region für GRETL-Upload-Tasks
+
+| `ORG_GRADLE_PROJECT_s3BucketName`
+| Ziel-Bucket für GRETL-Upload-Tasks
+
+| `ORG_GRADLE_PROJECT_s3AccessKey`
+| S3-Access-Key; als Secret zu injizieren
+
+| `ORG_GRADLE_PROJECT_s3SecretKey`
+| S3-Secret-Key; als Secret zu injizieren
+
+| `ORG_GRADLE_PROJECT_s3Acl`
+| Optionale S3-ACL; Default im gemeinsamen Themenrepo ist `private`
 |===
 
 Fuer das Produktionsimage kommen zusaetzlich `JENKINS_URL`,
@@ -81,6 +99,37 @@ Fuer das Produktionsimage kommen zusaetzlich `JENKINS_URL`,
 `JENKINS_AUTHENTICATED_GROUP` aus der Deployment-Konfiguration. Das
 Bind-Passwort ist als Secret zu injizieren und darf nicht in JCasC-Dateien oder
 im Repository stehen.
+
+== GRETL-S3-Runtime-Konfiguration
+
+Das Docker-Image enthält keine umgebungsspezifische S3-Konfiguration. Die
+Variablen mit dem Präfix `ORG_GRADLE_PROJECT_` werden von Gradle als normale
+Project Properties bereitgestellt. GRETL-Builds können sie deshalb mit
+`findProperty('s3Endpoint')`, `findProperty('s3Region')` und den entsprechenden
+Property-Namen verwenden.
+
+Für OpenShift werden nichtgeheime Werte über eine ConfigMap und Credentials
+über ein Secret am tatsächlichen Gradle-Ausführungscontainer injiziert:
+
+[source,yaml]
+----
+envFrom:
+  - configMapRef:
+      name: gretl-resources
+  - secretRef:
+      name: gretl-s3
+----
+
+Die Konfiguration muss am Kubernetes-Agent-Pod beziehungsweise am GRETL-
+Container gesetzt werden, falls die Pipeline Gradle dort ausführt. Eine
+Konfiguration nur am Jenkins-Controller wird nicht automatisch an einen
+separaten Agenten weitergereicht.
+
+Das aktuelle Image verwendet
+`/opt/datenportal/offline-bundle/gradle-user-home` als `GRADLE_USER_HOME`.
+Deshalb ist die Umgebungsvariante mit ConfigMap und Secret der bevorzugte
+Vertrag. Ein gemountetes `gradle.properties` funktioniert ebenfalls, muss aber
+genau unter dem im Deployment verwendeten `GRADLE_USER_HOME` liegen.
 
 == Wichtige Outputs
 
