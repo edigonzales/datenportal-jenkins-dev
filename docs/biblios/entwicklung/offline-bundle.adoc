@@ -45,6 +45,13 @@ Das Bundle besteht aus zwei Teilen:
   `initscript`, `pluginManagement` und Runtime-Klassenpfade
 |===
 
+Native DuckDB-Extensions sind kein Bestandteil dieses auf dem Host gebauten
+JAR-/Wrapper-Bundles. Das Dockerfile installiert `postgres`, `spatial` und
+`excel` anschliessend innerhalb des Linux-Images, passend zum JDBC-Treiber im
+Bundle. Sie liegen unter `/opt/datenportal/duckdb-extensions`; zur Laufzeit
+verweist `DUCKDB_EXTENSION_DIRECTORY` darauf. Dadurch werden keine
+Host-Binaerdateien fuer eine falsche Plattform in das Image uebernommen.
+
 Der technische Ablauf ist:
 
 . Jenkins checkt das Themenrepo aus.

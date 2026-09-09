@@ -63,6 +63,61 @@ als `GRADLE_JAVA_HOME_17` fuer GRETL und den Themenrepo-Wrapper.
 
 Die Trennung der Laufzeiten entspricht damit dem lokalen Shell-Setup.
 
+== DuckDB-Extensions
+
+Das Dockerfile ruft nach dem Kopieren des Offline-Bundles mit Java 17 den
+vorhandenen GRETL-`DuckDbExtensionInstaller` fuer `postgres spatial excel` auf.
+DuckDB waehlt dabei die zur eingebundenen JDBC-Version und Linux-Architektur
+passenden Binaerdateien. Unterstuetzt werden die Image-Architekturen `amd64`
+und `arm64`; es werden keine auf dem Build-Host installierten Extensions kopiert.
+Der Build benoetigt Netzwerk und bricht ab, wenn Installation oder Laden einer
+Extension fehlschlagen.
+
+`DUCKDB_EXTENSION_DIRECTORY` ist im Image auf
+`/opt/datenportal/duckdb-extensions` gesetzt. Die Dateien sind fuer `jenkins`
+lesbar, aber nicht schreibbar, und liegen ausserhalb des persistenten
+Jenkins-Homes. Die Umgebung gilt in Dev und Produktion. Bei einem
+JDBC-Versionswechsel installiert der Image-Neubau die passenden Extensions.
+GRETL-Jobs belassen `installExtensions` auf `false` und laden vorhandene
+Extensions zur Laufzeit. Dieser Vertrag betrifft das Containerimage;
+`bin/start.sh` auf dem Host installiert keine DuckDB-Extensions.
+
+== Automatischer DuckDB-Offlinetest
+
+`bin/build-image.sh` ruft nach dem Docker-Build verpflichtend
+`bin/test-image-duckdb.sh` auf. Erst wenn beide Schritte erfolgreich waren,
+meldet das Buildscript Erfolg. Fuer ein vorhandenes Image:
+
+[source,bash]
+----
+./bin/test-image-duckdb.sh datenportal-jenkins:local
+----
+
+Ohne Argument wird `IMAGE_NAME` beziehungsweise `datenportal-jenkins:local`
+verwendet. `THEMEN_REPO_DIR` verweist auf den zum Image passenden Themenrepo-Stand
+und ist standardmaessig `../datenportal-themenrepo`.
+
+Die Pruefung startet temporaere Container als `jenkins` mit `--network none`,
+frischem Home und temporaerem Arbeitsverzeichnis. Vorhandene Jenkins-Volumes
+und Host-Caches werden nicht eingebunden. Die versionierten technischen
+Fixtures unter `tests/duckdb` sowie Wrapper und Initialisierung aus dem
+Themenrepo werden read-only eingebunden und fuer die Ausfuehrung temporaer
+kopiert. Jenkins selbst wird dabei nicht gestartet.
+
+Geprueft werden:
+
+* Laden aller drei Extensions aus dem konfigurierten, nicht schreibbaren
+  Image-Verzeichnis sowie eine Spatial-Funktion;
+* CSV-Export nach XLSX und Parquet mit `DuckDbSqlExecutor`,
+  `installExtensions false` und dem Themenrepo-Wrapper mit `--offline`;
+* erneutes Einlesen beider Formate und Pruefung der Spalten, Zeilenzahl sowie
+  aller erwarteten Text- und Zahlenwerte;
+* ein separater Negativtest mit leerem Extension-Verzeichnis, der gezielt
+  wegen der fehlenden `excel`-Extension scheitern muss.
+
+Die Tests pruefen die Architektur des ausgefuehrten Images. Eine erfolgreiche
+Pruefung auf `arm64` ersetzt keinen Test auf `amd64` und umgekehrt.
+
 == Airgap-nahe Verifikation
 
 Fuer harte Airgap-Tests reicht `--offline` allein nicht. Zusaetzlich sollte der
@@ -88,6 +143,7 @@ Der eigentliche Offline-Vertrag bleibt dabei:
 
 * Gradle-Distribution aus `GRADLE_USER_HOME`
 * Plugin- und Runtime-Jars aus `DATENPORTAL_OFFLINE_JARS_DIR`
+* native DuckDB-Extensions aus `DUCKDB_EXTENSION_DIRECTORY`
 
 == Weiterfuehrend
 

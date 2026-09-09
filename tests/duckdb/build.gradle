@@ -1,0 +1,30 @@
+plugins {
+    id 'ch.so.agi.gretl'
+}
+
+import ch.so.agi.gretl.tasks.DuckDbSqlExecutor
+
+tasks.register('convert', DuckDbSqlExecutor) {
+    inMemoryDatabase()
+    installExtensions false
+    sources {
+        csv('input') {
+            file file('input.csv')
+            table = 'records'
+            delimiter = ';'
+            header = true
+        }
+    }
+    sqlFiles 'transform.sql'
+    exports {
+        parquet('parquet') {
+            query = 'SELECT * FROM result ORDER BY id'
+            file file('build/result.parquet')
+        }
+        xlsx('xlsx') {
+            query = 'SELECT * FROM result ORDER BY id'
+            file file('build/result.xlsx')
+            sheet = 'Records'
+        }
+    }
+}

@@ -18,7 +18,8 @@ LABEL org.opencontainers.image.title="datenportal-jenkins" \
 
 USER root
 
-ENV TZ=Europe/Zurich
+ENV TZ=Europe/Zurich \
+    DUCKDB_EXTENSION_DIRECTORY=/opt/datenportal/duckdb-extensions
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates curl git tar tzdata \
@@ -49,8 +50,18 @@ COPY --chown=jenkins:jenkins offline-bundle/ /opt/datenportal/offline-bundle/
 COPY --chown=jenkins:jenkins jenkins-gretl-datenportal-plugin.jpi /usr/share/jenkins/ref/plugins/jenkins-gretl-datenportal-plugin.jpi
 
 RUN chmod 0755 /usr/local/bin/datenportal-jenkins-entrypoint.sh \
+    && mkdir -p "${DUCKDB_EXTENSION_DIRECTORY}" \
     && chown -R jenkins:jenkins /opt/datenportal /usr/share/jenkins/ref
 
+USER jenkins
+
+RUN /opt/java/openjdk17/bin/java \
+    -cp '/opt/datenportal/offline-bundle/jars/*' \
+    ch.so.agi.gretl.internal.duckdb.DuckDbExtensionInstaller postgres spatial excel
+
+USER root
+RUN chown -R root:root "${DUCKDB_EXTENSION_DIRECTORY}" \
+    && chmod -R a+rX,a-w "${DUCKDB_EXTENSION_DIRECTORY}"
 USER jenkins
 
 RUN jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt

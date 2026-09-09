@@ -129,5 +129,7 @@ docker build \
   -t "$IMAGE_NAME" \
   "$DOCKER_CONTEXT_DIR"
 
+THEMEN_REPO_DIR="$THEMEN_REPO_DIR" "$ROOT_DIR/bin/test-image-duckdb.sh" "$IMAGE_NAME"
+
 echo
-echo "Docker-Image gebaut: $IMAGE_NAME"
+echo "Docker-Image gebaut und DuckDB offline geprueft: $IMAGE_NAME"
