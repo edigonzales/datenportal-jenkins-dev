@@ -209,3 +209,25 @@ fachlichen Vertrag des Datenportals.
   link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo]
 * Plugin-Konfiguration, Scanner und Seed-Logik:
   link:https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin[datenportal-jenkins-gretl-plugin]
+
+== Git-Rückschreiben
+
+Beide JCasC-Dateien referenzieren folgende optionale Umgebungsvariablen:
+
+[cols="1,2",options="header"]
+|===
+|Variable |Bedeutung und Default
+|`THEMEN_REPO_CREDENTIALS_ID` |Jenkins-Credential-ID für HTTPS-Git, leer
+|`THEMEN_REPO_WRITE_BACK_ENABLED` |ausdrückliche Schreibfreigabe, `false`
+|`THEMEN_REPO_COMMITTER_NAME` |technischer Git-Commit-Name, leer
+|`THEMEN_REPO_COMMITTER_EMAIL` |technische Git-E-Mail, leer
+|===
+
+Das zugehörige Benutzername/Passwort-Credential wird administrativ oder über eine
+separate, lokale JCasC-Secrets-Konfiguration bereitgestellt. Tokens gehören
+weder in Repository-URLs noch in versionierte Konfiguration.
+Die Git-Installation heisst `Default`. Lockable Resources stellt die gemeinsame
+Ressource `datenportal-topic-repository` bereit.
+`working-tree` bleibt unabhängig von der globalen Freigabe immer Vorschau.
+Die normale lokale Konfiguration schreibt nicht. Schreibtests verwenden nur
+ein eigens erstelltes lokales Bare-Repository.

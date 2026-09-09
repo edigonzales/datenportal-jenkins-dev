@@ -111,6 +111,7 @@ mkdir -p "$DOCKER_CONTEXT_DIR/offline-bundle"
 
 cp "$ROOT_DIR/plugins.txt" "$DOCKER_CONTEXT_DIR/plugins.txt"
 cp "$ROOT_DIR/casc/jenkins-production.yaml" "$DOCKER_CONTEXT_DIR/jenkins.yaml"
+cp "$ROOT_DIR/bin/configure-duckdb-extensions.sh" "$DOCKER_CONTEXT_DIR/configure-duckdb-extensions.sh"
 cp "$ROOT_DIR/docker-entrypoint.sh" "$DOCKER_CONTEXT_DIR/docker-entrypoint.sh"
 cp "$PLUGIN_HPI_SOURCE" "$DOCKER_CONTEXT_DIR/jenkins-gretl-datenportal-plugin.jpi"
 rsync -a --delete \
@@ -133,3 +134,6 @@ THEMEN_REPO_DIR="$THEMEN_REPO_DIR" "$ROOT_DIR/bin/test-image-duckdb.sh" "$IMAGE_
 
 echo
 echo "Docker-Image gebaut und DuckDB offline geprueft: $IMAGE_NAME"
+if [ "${RUN_PUBLICATION_TESTS:-0}" = "1" ]; then
+  THEMEN_REPO_DIR="$THEMEN_REPO_DIR" "$ROOT_DIR/bin/test-image-publication.sh" "$IMAGE_NAME"
+fi

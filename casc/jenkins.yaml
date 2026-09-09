@@ -50,6 +50,9 @@ jenkins:
               - "Overall/Read"
 
 unclassified:
+  lockableResourcesManager:
+    declaredResources:
+      - name: "datenportal-topic-repository"
   location:
     url: "${JENKINS_URL}"
     adminAddress: "Local Jenkins <noreply@localhost>"
@@ -60,7 +63,17 @@ unclassified:
     topicRepositoryUrl: "${THEMEN_REPO_URL}"
     topicRepositoryBranch: "${THEMEN_REPO_BRANCH}"
     topicRepositoryPath: "${THEMEN_REPO_PATH}"
+    topicRepositoryCredentialsId: "${THEMEN_REPO_CREDENTIALS_ID:-}"
+    topicRepositoryWriteBackEnabled: "${THEMEN_REPO_WRITE_BACK_ENABLED:-false}"
+    topicRepositoryCommitterName: "${THEMEN_REPO_COMMITTER_NAME:-}"
+    topicRepositoryCommitterEmail: "${THEMEN_REPO_COMMITTER_EMAIL:-}"
     seedJobAutoCreate: true
     seedJobCron: "H/15 * * * *"
     seedJobBuildsToKeep: 20
     seedJobOperatorsTeam: "gretl-datenportal-seed-operators"
+
+tool:
+  git:
+    installations:
+      - name: "Default"
+        home: "git"

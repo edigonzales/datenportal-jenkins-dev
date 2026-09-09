@@ -45,11 +45,12 @@ RUN apt-get update \
 
 COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
 COPY --chown=jenkins:jenkins jenkins.yaml /usr/share/jenkins/ref/casc_configs/jenkins.yaml
+COPY --chown=root:root configure-duckdb-extensions.sh /usr/local/bin/configure-duckdb-extensions.sh
 COPY --chown=root:root docker-entrypoint.sh /usr/local/bin/datenportal-jenkins-entrypoint.sh
 COPY --chown=jenkins:jenkins offline-bundle/ /opt/datenportal/offline-bundle/
 COPY --chown=jenkins:jenkins jenkins-gretl-datenportal-plugin.jpi /usr/share/jenkins/ref/plugins/jenkins-gretl-datenportal-plugin.jpi
 
-RUN chmod 0755 /usr/local/bin/datenportal-jenkins-entrypoint.sh \
+RUN chmod 0755 /usr/local/bin/datenportal-jenkins-entrypoint.sh /usr/local/bin/configure-duckdb-extensions.sh \
     && mkdir -p "${DUCKDB_EXTENSION_DIRECTORY}" \
     && chown -R jenkins:jenkins /opt/datenportal /usr/share/jenkins/ref
 
@@ -70,6 +71,7 @@ ENV CASC_JENKINS_CONFIG=/usr/share/jenkins/ref/casc_configs/jenkins.yaml \
     JENKINS_RUNTIME_MODE=production \
     THEMEN_REPO_MODE=managed-git \
     THEMEN_REPO_BRANCH=main \
+    DATENPORTAL_MODELS_DIR=/opt/datenportal/offline-bundle/models \
     DATENPORTAL_OFFLINE_JARS_DIR=/opt/datenportal/offline-bundle/jars \
     GRADLE_USER_HOME=/opt/datenportal/offline-bundle/gradle-user-home \
     GRADLE_JAVA_HOME_17=/opt/java/openjdk17 \

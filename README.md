@@ -215,3 +215,17 @@ Die technische Langform-Doku liegt unter
 - [datenportal-jenkins-gretl-plugin](https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin)
   ist die kanonische Doku fuer Scanner, Startformular, Rechtepruefung,
   Seed-Builder und generierte Jenkins-Jobs.
+
+### SQL-Lieferverarbeitung offline prüfen
+
+```bash
+./bin/test-image-publication.sh datenportal-jenkins:local
+# Alternativ nach dem Image-Bau automatisch ausführen:
+RUN_PUBLICATION_TESTS=1 ./bin/build-image.sh
+```
+
+Die Prüfung verwendet die Arbeitsstände der Schwester-Repositories
+`datenportal-themenrepo` und `datenportal-pilot-daten`, eine temporäre Kopie und
+ein separates lokales Bare-Repository. Alle GRETL-Prozesse laufen ohne Netzwerk.
+Details zu Modellen, Extensions und Ergebnissen stehen in der
+[Offline-Bundle-Dokumentation](docs/biblios/entwicklung/offline-bundle.adoc).

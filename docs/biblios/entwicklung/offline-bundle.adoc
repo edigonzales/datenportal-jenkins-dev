@@ -30,7 +30,7 @@ Runtime- und Plugin-Jars.
 
 == Laufzeitvertrag
 
-Das Bundle besteht aus zwei Teilen:
+Das Bundle besteht aus folgenden Teilen:
 
 [cols="1,3",options="header"]
 |===
@@ -43,6 +43,8 @@ Das Bundle besteht aus zwei Teilen:
 | `jars`
 | enthaelt die offline vorbereiteten Plugin- und Runtime-Jars fuer
   `initscript`, `pluginManagement` und Runtime-Klassenpfade
+| `models`
+| enthält die gepinnten Publikationsmodelle samt Abhängigkeiten
 |===
 
 Native DuckDB-Extensions sind kein Bestandteil dieses auf dem Host gebauten
@@ -92,3 +94,33 @@ Das Runtime-Themenrepo wird erst über `THEMEN_REPO_URL` und
   link:https://codeberg.org/edigonzales/datenportal-themenrepo[datenportal-themenrepo]
 * Pipeline- und Job-Logik, die dieses Bundle verbraucht:
   link:https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin[datenportal-jenkins-gretl-plugin]
+
+== Gepinnte Publikationsmodelle
+
+`stagePublicationModels` liest `shared/gradle/publication-models.json` aus dem
+Themenrepo. Die drei INTERLIS-Modelle werden von der dort festgelegten Revision
+mit SHA-256-Prüfung nach `build/offline-bundle/models/` geladen. Eine Modelländerung
+muss Manifest, SQL-Abbildung und Roundtrip-Tests gemeinsam aktualisieren.
+Das Image exportiert `DATENPORTAL_MODELS_DIR=/opt/datenportal/offline-bundle/models`.
+
+ili2duckdb wertet `DUCKDB_EXTENSION_DIRECTORY` nicht selbst aus. Deshalb macht
+`configure-duckdb-extensions.sh` die installierten Extensions zusätzlich unter
+`$HOME/.duckdb/extensions` verfügbar. Das Skript erhält bestehende Dateien und
+weist abweichende Inhalte zurück. Der Image-Entrypoint führt es vor Jenkins aus.
+`start.sh` installiert für den nativen Hoststart passende Host-Extensions und
+richtet denselben Suchpfad ein; diese Installation benötigt beim ersten Start
+Netzzugang.
+
+Die vollständige Vorbereitung und aufeinanderfolgende Lieferungen prüft:
+
+[source,bash]
+----
+./bin/test-image-publication.sh datenportal-jenkins:local
+----
+
+Der Test benötigt Docker, Python 3 sowie die Schwester-Repositories
+`datenportal-themenrepo` und `datenportal-pilot-daten`. Abweichende Pfade können
+über `THEMEN_REPO_DIR` und `PILOT_REPO_DIR` gesetzt werden. Alle GRETL-Prozesse
+laufen im tatsächlichen Image mit `--network none`. Quellrepos und Pilotdaten
+werden nicht verändert. Ein temporäres Testrepository und dessen Bare-Remote
+liegen mit den Logs und Ergebnissen unter `build/publication-test-*/`.

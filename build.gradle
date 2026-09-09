@@ -7,7 +7,7 @@ plugins {
 def configuredThemenRepoDir = findProperty('themenRepoDir') ?: System.getenv('THEMEN_REPO_DIR')
 def configuredOfflineBundleDir = findProperty('offlineBundleDir') ?: System.getenv('OFFLINE_BUNDLE_DIR')
 
-ext.themenRepoDir = file((configuredThemenRepoDir ?: '/Users/stefan/sources/datenportal-themenrepo').toString())
+ext.themenRepoDir = file((configuredThemenRepoDir ?: '../datenportal-themenrepo').toString())
 ext.offlineBundleDir = file((configuredOfflineBundleDir ?: "${buildDir}/offline-bundle").toString())
 ext.offlineJarsDir = new File(offlineBundleDir, 'jars')
 ext.offlineGradleUserHomeDir = new File(offlineBundleDir, 'gradle-user-home')
@@ -131,7 +131,7 @@ tasks.register('prepareWrapperDistribution') {
 }
 
 tasks.register('writeResolvedManifest') {
-    dependsOn 'stageOfflineJars', 'prepareWrapperDistribution'
+    dependsOn 'stageOfflineJars', 'prepareWrapperDistribution', 'stagePublicationModels'
     outputs.file resolvedManifestFile
     outputs.upToDateWhen { false }
 
@@ -159,6 +159,7 @@ tasks.register('writeResolvedManifest') {
                 gradleDistributionUrl    : wrapperProperties.getProperty('distributionUrl'),
                 requestedRuntimeDependencies: requestedRuntimeDependencies,
                 resolvedComponents       : resolvedComponents,
+                publicationModels        : new groovy.json.JsonSlurper().parse(new File(themenRepoDir, 'shared/gradle/publication-models.json')),
                 stagedJars               : stagedJars,
                 offlineJarsDir           : offlineJarsDir.absolutePath,
                 offlineGradleUserHomeDir : offlineGradleUserHomeDir.absolutePath
@@ -173,4 +174,28 @@ tasks.register('prepareOfflineBundle') {
     dependsOn 'writeResolvedManifest'
     group = 'datenportal'
     description = 'Builds the GRETL-style offline bundle with resolved jars and a warmed Gradle wrapper cache.'
+}
+
+// Download only the reviewed revision and verify content before adding it to the offline image.
+tasks.register('stagePublicationModels') {
+    dependsOn 'validateOfflineBundleInputs'
+    def source = new File(themenRepoDir, 'shared/gradle/publication-models.json')
+    def destination = new File(offlineBundleDir, 'models')
+    inputs.file source
+    outputs.dir destination
+    doLast {
+        def manifest = new groovy.json.JsonSlurper().parse(source)
+        destination.mkdirs()
+        manifest.models.each { entry ->
+            if (!(entry.file ==~ /[A-Za-z0-9_.-]+\.ili/)) throw new GradleException('Invalid model filename')
+            def target = new File(destination, entry.file)
+            def hash = { byte[] content -> java.security.MessageDigest.getInstance('SHA-256').digest(content).encodeHex().toString() }
+            if (!target.isFile() || hash(target.bytes) != entry.sha256) {
+                byte[] content = new URL(entry.url).bytes
+                if (hash(content) != entry.sha256) throw new GradleException('Model checksum mismatch: '+entry.file)
+                target.bytes = content
+            }
+        }
+        destination.listFiles().findAll { !manifest.models*.file.contains(it.name) }.each { delete it }
+    }
 }

@@ -24,4 +24,6 @@ case "$runtime_mode" in
     ;;
 esac
 
+/usr/local/bin/configure-duckdb-extensions.sh
+
 exec /usr/bin/tini -- /usr/local/bin/jenkins.sh "$@"

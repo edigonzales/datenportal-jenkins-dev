@@ -91,8 +91,13 @@ export THEMEN_REPO_MODE
 export THEMEN_REPO_URL
 export THEMEN_REPO_PATH
 export THEMEN_REPO_BRANCH
+export DATENPORTAL_MODELS_DIR="$OFFLINE_BUNDLE_DIR/models"
 export DATENPORTAL_OFFLINE_JARS_DIR="$OFFLINE_BUNDLE_DIR/jars"
 export GRADLE_USER_HOME="$OFFLINE_BUNDLE_DIR/gradle-user-home"
+export DUCKDB_EXTENSION_DIRECTORY="${DUCKDB_EXTENSION_DIRECTORY:-$ROOT_DIR/build/duckdb-extensions-host}"
+"$JAVA17_HOME/bin/java" -cp "$DATENPORTAL_OFFLINE_JARS_DIR/*" \
+  ch.so.agi.gretl.internal.duckdb.DuckDbExtensionInstaller postgres spatial excel
+"$ROOT_DIR/bin/configure-duckdb-extensions.sh"
 
 java_opts=(
   "-Djenkins.install.runSetupWizard=false"
