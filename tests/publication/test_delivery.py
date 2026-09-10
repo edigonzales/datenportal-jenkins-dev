@@ -20,6 +20,9 @@ WORK = Path(tempfile.mkdtemp(prefix='publication-test-', dir=RUNTIME / 'build'))
 shutil.copy(RUNTIME / 'tests/publication/VerifyExports.java', WORK)
 REPO = WORK / 'repo'
 shutil.copytree(TOPICS, REPO, ignore=shutil.ignore_patterns('.git', '.gradle', 'build', '.DS_Store'))
+# Identical filenames in different topics are legal; ili2db dataset names must not collide.
+for source in (REPO/'agi').glob('*/*.xtf'):
+    source.rename(source.with_name('datenblatt.xtf'))
 # Tests intentionally exercise bootstrap, independent of any catalog in the source snapshot.
 STATE = WORK / 'accepted'
 STATE.mkdir()
@@ -184,9 +187,19 @@ docker(['/opt/java/openjdk17/bin/java', '-cp', '/opt/datenportal/offline-bundle/
 metadata('changed-dates.xtf', set_dates)
 delivery('metadata-retains-technical', metadata='changed-dates.xtf', issue='ignored', write=True)
 assert technical(resources()[known_id]) == known_technical
-stable = CATALOG.read_bytes()
+def semantic_xtf(path):
+    # Namespace prefixes, sender and whitespace belong to the exporter. IDs and
+    # ordered model content must survive an unchanged metadata roundtrip.
+    def node(e):
+        value = e.text or ''
+        if len(e) and not value.strip():
+            value = ''  # indentation between model elements, not leaf text
+        return (e.tag, tuple(sorted(e.attrib.items())), value, tuple(node(c) for c in e))
+    return node(next(e for e in ET.parse(path).iter() if local(e)=='datasection'))
+
+stable = semantic_xtf(CATALOG)
 delivery('stable-metadata-roundtrip', metadata='changed-dates.xtf', write=True)
-assert CATALOG.read_bytes() == stable
+assert semantic_xtf(CATALOG) == stable
 
 original_issue_count = issue_count()
 lines = (PILOT / DATASET / 'so_bevo_altersstruktur_2025.csv').read_text().splitlines()
@@ -358,5 +371,41 @@ assert json.loads((migrated / 'current.json').read_text())['catalog'] is not Non
 assert {k: technical(v) for k, v in resources(migrated / 'published-catalog.xtf').items()} == {k: technical(v) for k, v in resources().items()}
 docker(bootstrap + ['-PpublicationManifestUrl=file:///test/migration/current.json',
                    '-PinitialCatalog=/test/missing.xtf'], 'bootstrap-missing-source', success=False)
+# Schema-aware conversion: preserve text identifiers and enforce declared scalar types.
+BASE_NS = 'http://www.interlis.ch/xtf/2.4/SO_AGI_DataCatalog_Base_20260529'
+def typed_attributes(tree, datatype='Integer'):
+    series = next(e for e in tree.iter() if local(e)=='DatasetSeries')
+    for resource in tree.iter():
+        if local(resource) in ('DatasetSeries','DatasetIssue'):
+            for element in list(resource):
+                if local(element) in ('attributes','model'):
+                    resource.remove(element)
+    for name, kind in [('code','Text'),('count',datatype),('value','Decimal'),('active','Boolean'),('day','Date'),('moment','DateTime')]:
+        wrapper = ET.SubElement(series, '{'+NS+'}attributes')
+        attr = ET.SubElement(wrapper, '{'+BASE_NS+'}DatasetAttribute')
+        for key, value in [('name',name),('dataType',kind),('mandatory','true')]:
+            ET.SubElement(attr, '{'+BASE_NS+'}'+key).text = value
+metadata('typed.xtf', typed_attributes)
+typed_csv = 'code,count,value,active,day,moment\n0012,4,1.25,true,2026-01-02,2026-01-02T12:34:56\n'
+(WORK/'typed.csv').write_text(typed_csv)
+delivery('typed-exports',data='/test/typed.csv',metadata='typed.xtf',issue='2050')
+docker(['/opt/java/openjdk17/bin/java','-cp','/opt/datenportal/offline-bundle/jars/*',
+        '/test/VerifyExports.java', '/test/repo/statistikdienst/build/publication/outputs/'+DATASET+'_2050.', 'typed'], 'typed-export-readback')
+for label, content, diagnostic in [
+        ('wrong-columns',typed_csv.replace('code,count','count,code'), 'CSV columns do not match'),
+        ('duplicate-columns',typed_csv.replace('code,count','code,CODE'), 'unique column names'),
+        ('blank-column',typed_csv.replace('code,count',',count'), 'unique column names'),
+        ('mandatory-empty',typed_csv.replace('0012,4',',4'), 'Mandatory CSV column'),
+        ('invalid-integer',typed_csv.replace('0012,4','0012,four'), 'Conversion Error')]:
+    (WORK/'invalid-typed.csv').write_text(content)
+    assert diagnostic.lower() in delivery(label,data='/test/invalid-typed.csv',metadata='typed.xtf',issue='2050',success=False).lower()
+metadata('unsupported-type.xtf',lambda t: typed_attributes(t, 'Unsupported'))
+assert 'Unsupported declared CSV datatype' in delivery('unsupported-type',data='/test/typed.csv',metadata='unsupported-type.xtf',issue='2050',success=False)
+# Preparing only must remain side-effect-free even when write/reload switches are set.
+docker(['/test/repo/shared/bin/gradlew-java17.sh','--offline','--no-daemon','-I','/test/repo/shared/gradle/init.gradle',
+        '-p','/test/repo/statistikdienst','preparePublication','-Pdataset='+DATASET,
+        '-PpublicationMode=repository-metadata','-PpublicationManifestUrl=file:///test/accepted/current.json',
+        '-PgitWriteBack=true','-PreloadPortal=true'], 'preparation-only')
+assert json.loads((OUTPUT/'report.json').read_text())['publication']=='not-published'
 print('PASS: offline bootstrap, delivery sequences, input rejection and export readback', flush=True)
 print('Artifacts:', WORK, flush=True)

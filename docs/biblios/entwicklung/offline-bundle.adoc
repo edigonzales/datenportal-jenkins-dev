@@ -125,5 +125,11 @@ laufen im tatsächlichen Image mit `--network none`. Die temporäre DuckDB liegt
 auf dem nativen Container-Dateisystem; nur fertige Artefakte werden auf den Host
 kopiert. Quellrepos und Pilotdaten werden nicht verändert. Ein temporärer Repository-Snapshot und die vom Test ausdrücklich übernommenen
 XTF-Kandidaten liegen mit den Logs unter `build/publication-test-*/`.
+Die XTF-Roundtrips verwenden den unbearbeiteten Export und vergleichen
+Modellinhalt und Kennungen unabhängig von XML-Präfixen und Einrückung.
+Die Datenexportprüfung liest XLSX und Parquet vollständig zurück. Zusätzliche
+Fixtures prüfen die deklarierten Datentypen, führende Nullen in Textspalten,
+Spaltenreihenfolge, doppelte/leere Spaltennamen und Pflichtwerte.
+
 Die getrennte S3-/Git-Prüfung im Dev-Stack verwendet eine isolierte Garage-Instanz
 und ein lokales Bare-Repository; siehe dessen `scripts/test-publication.py`.
