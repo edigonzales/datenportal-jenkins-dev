@@ -75,7 +75,11 @@ Der Quellpfad ist `THEMEN_REPO_PATH`, ersatzweise `THEMEN_REPO_DIR`. In diesem
 Modus leert das Skript eine eventuell gesetzte URL. Nach dem Start den Seeder
 laufen lassen. Spätere lokale Änderungen werden erst mit einem erneuten Seed
 übernommen. Jeder Build arbeitet auf einer eigenen Snapshot-Kopie; weder das
-externe Repo noch der Seeder-Snapshot werden durch Vorschauergebnisse verändert.
+externe Repo noch der Seeder-Snapshot werden verändert. Der Shellstart
+aktiviert S3 nicht selbst. Mit separat freigegebenem `s3Publish=true` kann aber
+auch dieser Modus nach S3 publizieren; der nächste Lauf liest dann dessen neuen
+Gesamtstand. Für die vollständige lokale Integration mit Garage siehe
+link:https://codeberg.org/edigonzales/datenportal-dev-stack/src/branch/main/docs/biblios/entwicklung/inbetriebnahme.adoc[Stack-Inbetriebnahme].
 
 Für eine neue ENV-Konfiguration den Hostprozess beenden und erneut starten.
 Nach Änderungen an Repository-Modus, URL oder Branch auch den Seeder erneut

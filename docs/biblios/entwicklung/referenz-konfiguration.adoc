@@ -11,33 +11,41 @@ Diese Seite ist die zentrale Referenz für die vom Jenkins-Dev-Repository
 verwendeten Einstellungen. Pfade wie `build/` beziehen sich auf dieses Repository;
 `../datenportal-themenrepo` und `../datenportal-jenkins-gretl-plugin` sind
 Schwester-Repositories. Die konkrete Compose-Konfiguration besitzt dagegen der
-link:https://codeberg.org/edigonzales/datenportal-dev-stack[Datenportal-Dev-Stack].
+link:https://codeberg.org/edigonzales/datenportal-dev-stack/src/branch/main/docs/biblios/entwicklung/konfiguration.adoc[Dev-Stack-Konfigurationsreferenz].
 
-[cols="2,1,3,2",options="header"]
+[cols="2,1,3,2,2",options="header"]
 |===
-|Startvariante |Laufzeitmodus |Repository und Quelle |Git-Rückschreiben
+|Startvariante |Laufzeitmodus |Repository-Code und Datenblätter |Git-Rückschreiben |S3-Publikation im Standardjob
 |Lokales `bin/start.sh`
 |fest `dev`
 |Default `managed-git`; ohne URL-Override `file://` auf `THEMEN_REPO_DIR`, Branch `main`
-|Default `false`; ausdrücklich aktivierte Schreibtests nur gegen ein separates lokales `file://`-Testrepository
+|Default aus; explizite Schreibtests nur gegen separates lokales `file://`-Repository
+|Default aus; separat `s3Publish=true` erforderlich
 |Lokales `bin/start.sh` mit `THEMEN_REPO_MODE=working-tree`
 |fest `dev`
 |Snapshot von `THEMEN_REPO_PATH`, ersatzweise `THEMEN_REPO_DIR`; URL wird geleert
-|Immer Vorschau; kein Commit/Push
+|Kein Commit/Push
+|Default aus; separat freigebbar
 |Dev-Compose
 |fest `dev`
-|fest `working-tree`; read-only Mount des Schwester-Repos nach `/workspace/themenrepo`
-|Default `false`; `working-tree` bleibt immer Vorschau
+|fest `working-tree`; read-only Mount nach `/workspace/themenrepo`
+|Kein Commit/Push
+|Default an für Garage; `DATENPORTAL_S3_PUBLISH=false` schaltet ab
 |Produktionsimage mit mitgelieferter JCasC
 |Default `production`
-|in Produktions-JCasC fest `managed-git`; `THEMEN_REPO_URL` erforderlich, Branch-Default im Image `main`
-|Default `false`; explizite Freigabe und vollständiger Git-Kontext erforderlich
+|fest `managed-git`; `THEMEN_REPO_URL` erforderlich, Branch-Default im Image `main`
+|Default aus; ausdrückliche Freigabe und vollständiger Kontext erforderlich
+|Default aus; separat `s3Publish=true` erforderlich
 |===
 
-Die drei Einstellungen sind unabhängig: `JENKINS_RUNTIME_MODE` steuert
+Vier Einstellungen sind zu unterscheiden: `JENKINS_RUNTIME_MODE` steuert
 Laufzeitprüfungen, der Repository-Modus bestimmt die Eingangsquelle und
 `THEMEN_REPO_WRITE_BACK_ENABLED` erlaubt die Git-Übernahme. `managed-git`
 allein bedeutet weder Produktionsbetrieb noch Schreibfreigabe.
+Die vierte Einstellung `s3Publish` erlaubt die Veröffentlichung des S3-Gesamtstands.
+Ohne diese Freigabe führt der Standardjob auch kein Git oder Reload aus.
+Der Repository-Modus bestimmt die Quelle von Code und Repository-Datenblättern;
+der angenommene Gesamtstand kommt in allen Modi aus S3.
 
 `JENKINS_RUNTIME_MODE=dev` wählt *keine* JCasC-Datei aus. Der Entrypoint
 überspringt damit die Produktions-Pflichtprüfungen; zusätzlich beschränken Plugin
@@ -123,8 +131,8 @@ Der optionale Portal-Reload folgt nach der Übernahme. opendata.swiss bleibt aus
 |`ORG_GRADLE_PROJECT_s3Publish` |`s3Publish` |Default `false`; Compose aktiviert Garage-Publikation ausdrücklich.
 |`ORG_GRADLE_PROJECT_publicationManifestUrl` |`publicationManifestUrl` |Pflicht für normale Läufe: aus Jenkins erreichbare öffentliche Adresse von `current.json`.
 |`ORG_GRADLE_PROJECT_catalogDownloadBase` |`catalogDownloadBase` |Öffentliche Downloadbasis für neue Distributionen; Compose: `http://localhost:<public-port>/ch.so.daten`.
-|`ORG_GRADLE_PROJECT_portalReloadUrl` |`portalReloadUrl` |Pflicht bei angefordertem Reload; administrativer POST-Endpunkt.
-|`ORG_GRADLE_PROJECT_portalReloadToken` |`portalReloadToken` |Secret; Pflicht bei Reload, nie in Kommandozeilen oder Logs ausgeben.
+|`ORG_GRADLE_PROJECT_portalReloadUrl` |`portalReloadUrl` |Pflicht bei angefordertem publizierendem Reload; administrativer POST-Endpunkt.
+|`ORG_GRADLE_PROJECT_portalReloadToken` |`portalReloadToken` |Secret; Pflicht bei publizierendem Reload, nie in Kommandozeilen oder Logs ausgeben.
 |`ORG_GRADLE_PROJECT_s3Endpoint` |`s3Endpoint` |Kein Default im gemeinsamen Build; für Upload erforderlich.
 |`ORG_GRADLE_PROJECT_s3Region` |`s3Region` |Kein Default; für Upload erforderlich.
 |`ORG_GRADLE_PROJECT_s3BucketName` |`s3BucketName` |Kein Default; für Upload erforderlich.
@@ -232,8 +240,8 @@ Image-Build-Variable ändert kein bereits laufendes Jenkins.
 |Seeder erneut ausführen; der nächste Build kopiert diesen Snapshot. Ergebnisse eines Vorschaujobs werden nie automatisch zum nächsten Eingang.
 |Job-/Team-YAML oder Jenkinsfile im Themenrepo
 |Im Git-Modus Änderungen auf dem konfigurierten Branch bereitstellen, dann Seeder ausführen. Im Snapshot-Modus reicht der aktualisierte lokale Arbeitsbaum plus Seed.
-|Datenblätter/Katalog im `managed-git`-Modus
-|Der Build erstellt einen frischen Remote-Checkout. Ein Seed ist zusätzlich nötig, wenn Jobdefinition, Themenauswahl oder Formulardaten nachgeführt werden sollen.
+|Repository-Datenblätter im `managed-git`-Modus
+|Der Build erstellt einen frischen Remote-Checkout. Ein Seed ist zusätzlich nötig, wenn Jobdefinition, Themenauswahl oder Formulardaten nachgeführt werden sollen. Für die fachliche Übernahme anschliessend `repository-metadata` ausführen. Der Gesamtstand wird unabhängig davon aus S3 gelesen.
 |===
 
 Dev-Compose setzt Modus, URL, Pfad und JCasC-Quelle explizit. Ein gleichnamiger

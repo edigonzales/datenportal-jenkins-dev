@@ -166,10 +166,11 @@ von Git oder AD. Für privates HTTPS-Git ein Jenkins-Credential administrativ od
 über eine separate JCasC-Secrets-Konfiguration bereitstellen und dessen ID mit
 `THEMEN_REPO_CREDENTIALS_ID` referenzieren.
 
-Auch in Produktion ist der obige Ablauf zunächst eine Vorschau. Erst
-`THEMEN_REPO_WRITE_BACK_ENABLED=true` sowie `THEMEN_REPO_COMMITTER_NAME` und
-`THEMEN_REPO_COMMITTER_EMAIL` erlauben die Git-Übernahme unter den weiteren
-Prüfungen des Themenrepo-Builds. S3-Publikation benötigt separat `s3Publish=true`;
+Auch in Produktion bleibt der Standardjob ohne S3-Freigabe eine Vorschau.
+S3-Publikation ist unabhängig vom Git-Modus möglich. Für die zusätzliche
+Git-Übernahme sind `THEMEN_REPO_WRITE_BACK_ENABLED=true`,
+`THEMEN_REPO_COMMITTER_NAME` und `THEMEN_REPO_COMMITTER_EMAIL` erforderlich.
+Zusätzlich gelten die Repository-Prüfungen des Themenrepo-Builds. S3-Publikation benötigt separat `s3Publish=true`;
 ein Reload wird zusätzlich pro Lauf angefordert.
 
 Nach Änderungen an Container-ENV oder Image den Container neu erstellen;
