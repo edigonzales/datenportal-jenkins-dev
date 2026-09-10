@@ -44,10 +44,14 @@ Active Directory, verpflichtendem StartTLS und projektbezogener
 Matrix-Autorisierung. Der Java-Truststore wird von der Deployment-Umgebung über
 `JAVA_OPTS` beziehungsweise `JENKINS_JAVA_OPTS` bereitgestellt.
 
+Die xref:referenz-konfiguration.adoc[Konfigurationsreferenz] enthält die
+Betriebsmatrix und alle Pflichtvariablen.
+
 Das Image ist für beide Betriebsarten identisch. `JENKINS_RUNTIME_MODE=dev`
 überspringt die Produktionsprüfungen des Entrypoints und erwartet eine von
-aussen gemountete lokale JCasC. `JENKINS_RUNTIME_MODE=production` aktiviert die
-Prüfung der AD- und Deployment-Variablen. Die lokale JCasC wird nie in das
+aussen gemountete lokale JCasC, die separat über `CASC_JENKINS_CONFIG`
+ausgewählt werden muss. Der Entrypoint wechselt die JCasC-Datei nicht selbst.
+`JENKINS_RUNTIME_MODE=production` aktiviert die Prüfung der AD- und Deployment-Variablen. Die lokale JCasC wird nie in das
 allgemeine Registry-Image eingebettet.
 
 Das Plugin kann mit `PLUGIN_SOURCE=local|maven|auto` aus dem lokalen Checkout
@@ -80,7 +84,10 @@ Jenkins-Homes. Die Umgebung gilt in Dev und Produktion. Bei einem
 JDBC-Versionswechsel installiert der Image-Neubau die passenden Extensions.
 GRETL-Jobs belassen `installExtensions` auf `false` und laden vorhandene
 Extensions zur Laufzeit. Dieser Vertrag betrifft das Containerimage;
-`bin/start.sh` auf dem Host installiert keine DuckDB-Extensions.
+`bin/start.sh` installiert dagegen passende Host-Extensions nach
+`DUCKDB_EXTENSION_DIRECTORY` (Default `build/duckdb-extensions-host`) und macht
+sie ebenfalls unter `$HOME/.duckdb/extensions` auffindbar. Die erste Installation
+benötigt Netzwerk; `SKIP_OFFLINE_BUNDLE=1` überspringt diesen Schritt nicht.
 
 == Automatischer DuckDB-Offlinetest
 
@@ -118,26 +125,64 @@ Geprueft werden:
 Die Tests pruefen die Architektur des ausgefuehrten Images. Eine erfolgreiche
 Pruefung auf `arm64` ersetzt keinen Test auf `amd64` und umgekehrt.
 
-== Airgap-nahe Verifikation
+== Produktion konfigurieren
 
-Fuer harte Airgap-Tests reicht `--offline` allein nicht. Zusaetzlich sollte der
-Container oder Prozess ohne Netzwerkzugang laufen, zum Beispiel:
+Das Image bringt die Produktions-JCasC mit. Diese setzt `managed-git` fest;
+`THEMEN_REPO_MODE` ändert diesen Wert nicht. Die folgende beispielhafte
+Konfigurationsdatei wird ausserhalb des Repositories durch das Deployment
+bereitgestellt. URLs, Domain, Bind-Identität und Gruppen müssen zur Umgebung passen:
 
-```bash
-docker run --network none \
-  -e THEMEN_REPO_URL=https://git.example.invalid/datenportal-themenrepo.git \
-  -e THEMEN_REPO_BRANCH=main \
-  -e JENKINS_URL=https://jenkins.example.invalid/ \
-  -e JENKINS_ADMIN_ADDRESS=jenkins@example.invalid \
-  -e AD_DOMAIN=example.invalid \
-  -e AD_SERVERS=ad01.example.invalid:636 \
-  -e AD_BIND_NAME='CN=jenkins-bind,OU=Service Accounts,DC=example,DC=invalid' \
-  -e AD_BIND_PASSWORD='aus-secret-management' \
-  -e JENKINS_ADMIN_GROUP='Datenportal-Jenkins-Admins' \
-  -e JENKINS_AUTHENTICATED_GROUP='Datenportal-Jenkins-Users' \
+[source,text]
+----
+JENKINS_RUNTIME_MODE=production
+THEMEN_REPO_URL=https://git.example.invalid/datenportal-themenrepo.git
+THEMEN_REPO_BRANCH=main
+THEMEN_REPO_WRITE_BACK_ENABLED=false
+JENKINS_URL=https://jenkins.example.invalid/
+JENKINS_ADMIN_ADDRESS=jenkins@example.invalid
+AD_DOMAIN=example.invalid
+AD_SERVERS=ad01.example.invalid:389
+AD_BIND_NAME=CN=jenkins-bind,OU=Service Accounts,DC=example,DC=invalid
+JENKINS_ADMIN_GROUP=Datenportal-Jenkins-Admins
+JENKINS_AUTHENTICATED_GROUP=Datenportal-Jenkins-Users
+----
+
+`AD_BIND_PASSWORD` kommt separat aus dem Secret-Management. Ein schematischer
+Docker-Start übernimmt es aus einer bereits gesetzten Prozessumgebung, ohne den
+Wert in die Kommandozeile zu schreiben:
+
+[source,bash]
+----
+docker run --rm \
+  --env-file /pfad/zur/jenkins-production.env \
+  --env AD_BIND_PASSWORD \
   -v jenkins-home:/var/jenkins_home \
   datenportal-jenkins:local
-```
+----
+
+Netzwerk, Portfreigabe und Java-Truststore sind zusätzlich durch das Deployment
+bereitzustellen. Der Entrypoint prüft Pflichtwerte, aber nicht die Erreichbarkeit
+von Git oder AD. Für privates HTTPS-Git ein Jenkins-Credential administrativ oder
+über eine separate JCasC-Secrets-Konfiguration bereitstellen und dessen ID mit
+`THEMEN_REPO_CREDENTIALS_ID` referenzieren.
+
+Auch in Produktion ist der obige Ablauf zunächst eine Vorschau. Erst
+`THEMEN_REPO_WRITE_BACK_ENABLED=true` sowie `THEMEN_REPO_COMMITTER_NAME` und
+`THEMEN_REPO_COMMITTER_EMAIL` erlauben die Git-Übernahme unter den weiteren
+Prüfungen des Themenrepo-Builds. S3-Publikation benötigt separat `s3Publish=true`;
+ein Reload wird zusätzlich pro Lauf angefordert.
+
+Nach Änderungen an Container-ENV oder Image den Container neu erstellen;
+ein reiner Neustart übernimmt keine neue ENV-Konfiguration. Nach Änderungen
+am Repository-Kontext den Seeder erneut ausführen.
+
+== Airgap-nahe Verifikation
+
+Für harte GRETL-Airgap-Tests reicht `--offline` allein nicht. Die oben
+beschriebenen Image-Tests führen die eigentlichen Tasks zusätzlich mit
+`--network none` aus. Ein Produktions-Jenkins benötigt dagegen Zugriff auf
+Git und AD; ein Containerstart ohne Netzwerk beweist keine funktionierende
+Anmeldung oder Lieferverarbeitung mit diesen externen Diensten.
 
 Der eigentliche Offline-Vertrag bleibt dabei:
 

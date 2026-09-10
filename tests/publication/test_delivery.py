@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Real GRETL/ili2duckdb integration, offline; all Git writes target a disposable bare repo."""
+"""Real GRETL/ili2duckdb delivery sequences without networking; candidates are promoted only by this test."""
 import copy
 import hashlib
 import json
@@ -21,8 +21,9 @@ shutil.copy(RUNTIME / 'tests/publication/VerifyExports.java', WORK)
 REPO = WORK / 'repo'
 shutil.copytree(TOPICS, REPO, ignore=shutil.ignore_patterns('.git', '.gradle', 'build', '.DS_Store'))
 # Tests intentionally exercise bootstrap, independent of any catalog in the source snapshot.
-CATALOG = REPO / 'shared/data/published-catalog.xtf'
-CATALOG.unlink(missing_ok=True)
+STATE = WORK / 'accepted'
+STATE.mkdir()
+CATALOG = STATE / 'catalog.xtf'
 DATASET = 'ch.so.bevoelkerung.altersstruktur'
 RELATIVE = Path('statistikdienst') / DATASET / ('meta-' + DATASET + '.xtf')
 SHEET = REPO / RELATIVE
@@ -35,12 +36,23 @@ ET.register_namespace('ili', 'http://www.interlis.ch/xtf/2.4/INTERLIS')
 sequence = 0
 
 
+# DuckDB's working files use native container storage, like the Jenkins volume.
+# Docker Desktop bind mounts are used only for inputs and completed artifacts.
+(WORK / 'native-build.gradle').write_text("gradle.beforeProject { p -> p.buildDir = new File('/tmp/datenportal-build/' + p.projectDir.name) }\n")
+
 def docker(arguments, name, success=True):
+    if '-p' in arguments:
+        arguments = arguments + ['-I', '/test/native-build.gradle']
     command = ['docker', 'run', '--rm', '--network', 'none', '--user', 'jenkins',
                '-v', str(WORK) + ':/test', '-v', str(PILOT) + ':/pilot:ro',
                '--entrypoint', '/bin/bash', IMAGE, '-c',
                'set -euo pipefail; /usr/local/bin/configure-duckdb-extensions.sh; '
-               'git config --global --add safe.directory /test/repo; exec "$@"', 'bash'] + arguments
+               'git config --global --add safe.directory /test/repo; set +e; "$@"; result=$?; set -e; '
+               'if [ -d /tmp/datenportal-build ]; then '
+               'for source in /tmp/datenportal-build/*; do '
+               'name=$(basename "$source"); target=/test/repo/$name/build; '
+               'if [ "$name" = repo ]; then target=/test/repo/build; fi; '
+               'rm -rf "$target"; mkdir -p "$target"; cp -a "$source/." "$target/"; done; fi; exit "$result"', 'bash'] + arguments
     log = WORK / (name + '.log')
     with log.open('w') as stream:
         result = subprocess.run(command, stdout=stream, stderr=subprocess.STDOUT)
@@ -49,44 +61,31 @@ def docker(arguments, name, success=True):
     return log.read_text()
 
 
-def git(*args):
-    return docker(['git', '-C', '/test/repo'] + list(args), 'git').strip()
-
-
-def revision():
-    return git('ls-remote', 'origin', 'refs/heads/main').split()[0]
-
-
 def delivery(name, data=None, metadata=None, issue=None, write=False, success=True, extra=()):
     global sequence
     sequence += 1
     args = ['/test/repo/shared/bin/gradlew-java17.sh', '--offline', '--no-daemon',
             '-I', '/test/repo/shared/gradle/init.gradle', '-p', '/test/repo/statistikdienst',
-            'publishToDatenportal', '-Pdataset=' + DATASET]
+            'publishToDatenportal', '-Pdataset=' + DATASET, '-PpublicationManifestUrl=file:///test/accepted/current.json']
     if data:
         args += ['-PdataFile=' + data]
     if metadata:
         args += ['-PmetadataFile=/test/' + metadata]
     if issue is not None:
         args += ['-PseriesId=' + issue]
-    if write:
-        args += ['-PtopicRepositoryMode=managed-git', '-PgitWriteBack=true',
-                 '-PtopicRepositoryUrl=file:///test/accepted.git', '-PtopicRepositoryBranch=main',
-                 '-PgitBaseRevision=' + git('rev-parse', 'HEAD'),
-                 '-PgitCommitterName=Delivery Test', '-PgitCommitterEmail=test@example.invalid']
     print(f'{sequence:02d} {name}', flush=True)
     log = docker(args + list(extra), f'{sequence:02d}-{name}', success)
     if not success:
         return log
     if success:
         report = json.loads((OUTPUT / 'report.json').read_text())
-        assert report['mode'] == ('accepted' if write else 'preview'), report
+        assert report['mode'] == 'preview', report
         assert (OUTPUT / 'datasheets.xtf').is_file()
         assert (OUTPUT / 'metadata' / SHEET.name).is_file()
         shutil.copytree(OUTPUT, WORK / f'{sequence:02d}-{name}-outputs')
         if write:
-            assert report['resultRevision'] == revision()
-            assert not git('status', '--porcelain')
+            promote(OUTPUT)
+            shutil.copy(OUTPUT / 'metadata' / SHEET.name, SHEET)
         return report
 
 
@@ -132,17 +131,23 @@ def issue_count():
     return sum(local(e) == 'DatasetIssue' for e in ET.parse(SHEET).iter())
 
 
+def promote(output):
+    manifest = json.loads((output / 'current.json').read_text())
+    for f in (output.parent / 'release').glob('*.xtf'):
+        shutil.copy(f, STATE / f.name)
+    shutil.copy(output / 'current.json', STATE / 'current.json')
+    if manifest['catalog']:
+        shutil.copy(STATE / manifest['catalog'], CATALOG)
+
+
 print('Integration artifacts:', WORK, flush=True)
-docker(['bash', '-c', '''set -e
- git init -b main /test/repo
- git -C /test/repo config user.name 'Fixture Setup'
- git -C /test/repo config user.email fixture@example.invalid
- git -C /test/repo add --all
- git -C /test/repo commit -m 'initial fixture snapshot'
- git clone --bare /test/repo /test/accepted.git
- git -C /test/repo remote add origin file:///test/accepted.git
-'''], 'initialize')
-initial_revision = revision()
+bootstrap = ['/test/repo/shared/bin/gradlew-java17.sh', '--offline', '--no-daemon',
+    '-I', '/test/repo/shared/gradle/init.gradle', '-p', '/test/repo', 'initializePublication',
+    '-PpublicationManifestUrl=file:///test/accepted/current.json']
+docker(bootstrap, 'bootstrap')
+promote(REPO / 'build/publication/outputs')
+assert json.loads((STATE / 'current.json').read_text())['catalog'] is None
+docker(bootstrap, 'bootstrap-existing-rejected', success=False)
 (WORK / 'roundtrip.gradle').write_text('''
 gradle.projectsEvaluated {
     def p=gradle.rootProject
@@ -162,7 +167,7 @@ metadata('METADATA_FILE')
 delivery('metadata-bootstrap', metadata='METADATA_FILE', issue='ignored')
 assert not CATALOG.exists() and not (OUTPUT / 'published-catalog.xtf').exists()
 assert not list(OUTPUT.glob('*.parquet'))
-assert revision() == initial_revision
+assert not (REPO / ".git").exists()
 
 shutil.copy(PILOT / DATASET / 'so_bevo_altersstruktur_2025.csv', WORK / 'DATA_FILE')
 delivery('known-data', data='/test/DATA_FILE', issue='2025', write=True, extra=['-I', '/test/roundtrip.gradle'])
@@ -173,8 +178,6 @@ initial_resources = resources()
 known_id = DATASET + '_2025'
 known_technical = technical(initial_resources[known_id])
 assert known_technical['issued'] and known_technical['counts'] == ['106', '6']
-assert set(git('diff-tree', '--no-commit-id', '--name-only', '-r', 'HEAD').splitlines()) == {
-    str(RELATIVE), 'shared/data/published-catalog.xtf'}
 # Binary exports must contain the same actual values as the input, not merely have valid headers.
 docker(['/opt/java/openjdk17/bin/java', '-cp', '/opt/datenportal/offline-bundle/jars/*',
         '/test/VerifyExports.java'], 'readback')
@@ -262,17 +265,17 @@ standalone = 'ch.so.agi.av_nachfuehrungsstatistik.personal'
 standalone_csv = next((PILOT / standalone).glob('*.csv'))
 args = ['/test/repo/shared/bin/gradlew-java17.sh', '--offline', '--no-daemon',
         '-I', '/test/repo/shared/gradle/init.gradle', '-p', '/test/repo/agi',
-        'publishToDatenportal', '-Pdataset=' + standalone,
+        'publishToDatenportal', '-Pdataset=' + standalone, '-PpublicationManifestUrl=file:///test/accepted/current.json',
         '-PdataFile=/pilot/' + standalone + '/' + standalone_csv.name]
 print('Standalone data delivery', flush=True)
 docker(args, 'standalone-data')
 standalone_output = REPO / 'agi/build/publication/outputs/published-catalog.xtf'
 assert standalone in resources(standalone_output)
 assert technical(resources(standalone_output)[standalone])['issued']
-assert not git('status', '--porcelain')
+assert not (REPO / '.git').exists()
 
 # Input rejection and preview isolation: no invalid delivery can advance the shared baseline.
-baseline = revision()
+baseline = (STATE / 'current.json').read_bytes()
 delivery('no-upload-rejected', success=False)
 delivery('blank-issue-rejected', data=CSV, issue='   ', success=False)
 (WORK / 'invalid.csv').write_text('Jahrgang;Auslaender;Auslaenderinnen;Schweizer;Schweizerinnen;Total\nwrong;1;1;1;1;4\n')
@@ -294,7 +297,7 @@ def duplicate_label(tree):
     wrapper = ET.SubElement(series, '{' + NS + '}issues')
     wrapper.append(additional)
 metadata('duplicate-label.xtf', duplicate_label)
-assert 'Duplicate issue labels' in delivery('duplicate-label-rejected', metadata='duplicate-label.xtf', success=False)
+assert 'duplicate' in delivery('duplicate-label-rejected', metadata='duplicate-label.xtf', success=False).lower()
 
 def missing_model(tree):
     series = next(e for e in tree.iter() if local(e) == 'DatasetSeries')
@@ -303,42 +306,57 @@ metadata('missing-model.xtf', missing_model)
 assert 'model not found' in delivery('missing-model-rejected', metadata='missing-model.xtf',
         data=CSV, issue='2030', success=False)
 valid_catalog = CATALOG.read_bytes()
-CATALOG.write_text('<broken')
+active_catalog = STATE / json.loads((STATE / 'current.json').read_text())['catalog']
+active_catalog.write_text('<broken')
 delivery('invalid-existing-catalog-rejected', data=CSV, issue='2030', success=False)
-CATALOG.write_bytes(valid_catalog)
-assert revision() == baseline
-assert not git('status', '--porcelain')
+active_catalog.write_bytes(valid_catalog)
+assert (STATE / 'current.json').read_bytes() == baseline
+assert not (REPO / '.git').exists()
 
-# A real competing commit advances the remote after preparation and before the Git gate.
-docker(['git', 'clone', '/test/accepted.git', '/test/competitor'], 'competing-checkout')
-(WORK / 'race.gradle').write_text("""
-gradle.projectsEvaluated {
-    gradle.rootProject.tasks.named('preparePublication') {
-        doLast {
-            project.exec { commandLine 'git','-C','/test/competitor','-c','user.name=Other',
-                '-c','user.email=other@example.invalid','commit','--allow-empty','-m','concurrent manual change' }
-            project.exec { commandLine 'git','-C','/test/competitor','push','origin','main' }
-        }
-    }
-}
-""")
-delivery('concurrent-commit-rejected', data=CSV, issue='2030', write=True, success=False,
-         extra=['-I', '/test/race.gradle'])
-assert revision() != baseline
-assert git('rev-parse', 'HEAD') == baseline
-assert not git('status', '--porcelain')
-# This reset is exclusively in the test-created checkout, to begin the next isolated scenario.
-git('fetch', 'origin')
-git('reset', '--hard', 'origin/main')
-baseline = revision()
+# Repository-only mode uses exactly the selected metadata and preserves the accepted technical state.
+before = {k: technical(v) for k, v in resources().items()}
+delivery('repository-metadata', extra=['-PpublicationMode=repository-metadata'], write=True)
+assert {k: technical(v) for k, v in resources().items()} == before
+delivery('repository-rejects-upload', metadata='combined.xtf', extra=['-PpublicationMode=repository-metadata'], success=False)
+# A newly added series must be inserted without changing the existing topics.
+previous_resources = {k: technical(v) for k, v in resources().items()}
+old_dataset = DATASET
+new_series = SHEET.read_text().replace(old_dataset, 'ch.so.test.newseries')
+DATASET = 'ch.so.test.newseries'
+RELATIVE = Path('statistikdienst') / DATASET / ('meta-' + DATASET + '.xtf')
+SHEET = REPO / RELATIVE
+SHEET.parent.mkdir()
+SHEET.write_text(new_series)
+delivery('new-series-repository-metadata', extra=['-PpublicationMode=repository-metadata'], write=True)
+assert DATASET not in resources()  # Metadata alone does not fabricate technical deliveries.
+assert {k: technical(resources()[k]) for k in previous_resources} == previous_resources
+collection = STATE / json.loads((STATE / 'current.json').read_text())['datasheets']
+assert any(text(e, 'identifier') == DATASET for e in ET.parse(collection).iter())
+delivery('new-series-first-csv', data=CSV, issue='2030', write=True)
+assert DATASET + '_2030' in resources()
+assert {k: technical(resources()[k]) for k in previous_resources} == previous_resources
 
-# A rejected push may leave a commit in its isolated checkout, never in the shared source.
-hook = WORK / 'accepted.git/hooks/pre-receive'
-hook.write_text('#!/bin/sh\nexit 1\n')
-hook.chmod(0o755)
-delivery('push-rejected', data='/test/small.csv', issue='2030', write=True, success=False)
-assert revision() == baseline
-hook.unlink()
-assert git('rev-parse', 'HEAD') != baseline
-print('PASS: isolated delivery sequences and rejection tests', flush=True)
+# Malformed manifests and missing referenced XTF cannot silently reset the state.
+manifest_file = STATE / 'current.json'
+valid_manifest = manifest_file.read_bytes()
+manifest_file.write_text('{broken')
+delivery('broken-manifest', extra=['-PpublicationMode=repository-metadata'], success=False)
+manifest_file.write_bytes(valid_manifest)
+manifest = json.loads(valid_manifest)
+referenced = STATE / manifest['datasheets']
+backup = referenced.read_bytes()
+referenced.unlink()
+delivery('missing-referenced-sheets', extra=['-PpublicationMode=repository-metadata'], success=False)
+referenced.write_bytes(backup)
+
+# Explicit administrative migration accepts the previous catalog; missing sources fail.
+migration_args = bootstrap + ['-PpublicationManifestUrl=file:///test/migration/current.json',
+                             '-PinitialCatalog=/test/accepted/catalog.xtf']
+docker(migration_args, 'bootstrap-migration')
+migrated = REPO / 'build/publication/outputs'
+assert json.loads((migrated / 'current.json').read_text())['catalog'] is not None
+assert {k: technical(v) for k, v in resources(migrated / 'published-catalog.xtf').items()} == {k: technical(v) for k, v in resources().items()}
+docker(bootstrap + ['-PpublicationManifestUrl=file:///test/migration/current.json',
+                   '-PinitialCatalog=/test/missing.xtf'], 'bootstrap-missing-source', success=False)
+print('PASS: offline bootstrap, delivery sequences, input rejection and export readback', flush=True)
 print('Artifacts:', WORK, flush=True)

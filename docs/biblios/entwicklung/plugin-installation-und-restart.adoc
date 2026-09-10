@@ -94,7 +94,7 @@ Danach in Jenkins:
   auf den Cron-Lauf warten;
 . `/gretl-datenportal` oeffnen;
 . einen Datensatz waehlen;
-. mindestens `METADATA_FILE` oder `DATA_FILE` hochladen;
+. entweder eine Datei liefern oder «Datenblatt aus Repository übernehmen» wählen;
 . den generierten Job starten.
 
 == Weiterfuehrend

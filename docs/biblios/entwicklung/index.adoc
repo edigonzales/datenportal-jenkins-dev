@@ -33,6 +33,12 @@ Nicht behandelt werden hier:
 Diese Themen gehoeren in die Repositories `datenportal-themenrepo` und
 `datenportal-jenkins-gretl-plugin`.
 
+== Konfiguration finden
+
+Die xref:referenz-konfiguration.adoc[Konfigurationsreferenz] vergleicht
+Shellstart, Dev-Compose und Produktion und beschreibt ENV-Defaults,
+Git-Schreibfreigabe sowie die Übernahme von Konfigurationsänderungen.
+
 == Kurzfassung
 
 Dieses Repo ist keine fachliche Quelle, sondern die technische

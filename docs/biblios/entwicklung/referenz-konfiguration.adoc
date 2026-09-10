@@ -5,100 +5,242 @@
 
 toc::[]
 
-== Wichtige Umgebungsvariablen
+== Betriebsarten auf einen Blick
 
-[cols="1,3",options="header"]
+Diese Seite ist die zentrale Referenz für die vom Jenkins-Dev-Repository
+verwendeten Einstellungen. Pfade wie `build/` beziehen sich auf dieses Repository;
+`../datenportal-themenrepo` und `../datenportal-jenkins-gretl-plugin` sind
+Schwester-Repositories. Die konkrete Compose-Konfiguration besitzt dagegen der
+link:https://codeberg.org/edigonzales/datenportal-dev-stack[Datenportal-Dev-Stack].
+
+[cols="2,1,3,2",options="header"]
 |===
-| Variable | Bedeutung
-
-| `JAVA17_HOME`
-| optionales Override fuer Java 17 bei GRETL und Gradle
-
-| `JAVA21_HOME`
-| optionales Override fuer Java 21 bei Jenkins
-
-| `THEMEN_REPO_DIR`
-| lokale Build-Quelle fuer `bin/build-offline-bundle.sh` und lokale Shell-Tests
-
-| `THEMEN_REPO_MODE`
-| `managed-git` (Default) fuer einen Jenkins-internen Git-Checkout oder `working-tree` fuer einen lokalen Snapshot des Arbeitsbaums
-
-| `THEMEN_REPO_URL`
-| Runtime-Git-URL im Modus `managed-git`; im Produktionsimage Pflicht
-
-| `THEMEN_REPO_PATH`
-| lokaler Arbeitsbaum im Modus `working-tree`
-
-| `THEMEN_REPO_BRANCH`
-| Branch fuer den Jenkins-Checkout des Themenrepos
-
-| `JENKINS_HOME_DIR` / `JENKINS_HOME`
-| Jenkins-Home fuer `start.sh` und Plugin-Installation
-
-| `FRESH_JENKINS_HOME_DIR`
-| optionales, auf `build/` begrenztes Ziel von `start-fresh.sh`
-
-| `SKIP_OFFLINE_BUNDLE`
-| `1` verwendet ein vorhandenes Bundle beim Neustart nach Plugin-Aenderungen
-
-| `OFFLINE_BUNDLE_DIR`
-| Zielverzeichnis fuer `bin/build-offline-bundle.sh`
-
-| `JENKINS_VERSION`
-| Version des lokal geladenen Jenkins-WARs und Standard-Basisimages
-
-| `JENKINS_RUNTIME_MODE`
-| `dev` für die lokale JCasC oder `production` für die AD-/Deployment-Konfiguration
-
-| `PLUGIN_MANAGER_VERSION`
-| Version des Jenkins Plugin Installation Manager
-
-| `IMAGE_NAME`
-| Zielname des lokal gebauten Docker-Images
-
-| `IMAGE_VERSION`
-| OCI-Image-Version als Label; der lokale Default ist `local`
-
-| `JENKINS_IMAGE`
-| Basisimage fuer `bin/build-image.sh`
-
-| `PLUGIN_SOURCE`
-| `local`, `maven` oder `auto`; Quelle des beim Image-Bau installierten HPI
-
-| `PLUGIN_REPO`
-| lokaler Checkout des Jenkins-Plugins für `PLUGIN_SOURCE=local|auto`
-
-| `PLUGIN_GROUP`, `PLUGIN_ARTIFACT`, `PLUGIN_VERSION`
-| Maven-Koordinaten des Jenkins-Plugins für `PLUGIN_SOURCE=maven|auto`
-
-| `PLUGIN_REPOSITORY_URL`
-| Maven-Repository für das Jenkins-Plugin
-
-| `ORG_GRADLE_PROJECT_s3Endpoint`
-| S3-Endpunkt für GRETL-Upload-Tasks
-
-| `ORG_GRADLE_PROJECT_s3Region`
-| S3-Region für GRETL-Upload-Tasks
-
-| `ORG_GRADLE_PROJECT_s3BucketName`
-| Ziel-Bucket für GRETL-Upload-Tasks
-
-| `ORG_GRADLE_PROJECT_s3AccessKey`
-| S3-Access-Key; als Secret zu injizieren
-
-| `ORG_GRADLE_PROJECT_s3SecretKey`
-| S3-Secret-Key; als Secret zu injizieren
-
-| `ORG_GRADLE_PROJECT_s3Acl`
-| Optionale S3-ACL; Default im gemeinsamen Themenrepo ist `private`
+|Startvariante |Laufzeitmodus |Repository und Quelle |Git-Rückschreiben
+|Lokales `bin/start.sh`
+|fest `dev`
+|Default `managed-git`; ohne URL-Override `file://` auf `THEMEN_REPO_DIR`, Branch `main`
+|Default `false`; ausdrücklich aktivierte Schreibtests nur gegen ein separates lokales `file://`-Testrepository
+|Lokales `bin/start.sh` mit `THEMEN_REPO_MODE=working-tree`
+|fest `dev`
+|Snapshot von `THEMEN_REPO_PATH`, ersatzweise `THEMEN_REPO_DIR`; URL wird geleert
+|Immer Vorschau; kein Commit/Push
+|Dev-Compose
+|fest `dev`
+|fest `working-tree`; read-only Mount des Schwester-Repos nach `/workspace/themenrepo`
+|Default `false`; `working-tree` bleibt immer Vorschau
+|Produktionsimage mit mitgelieferter JCasC
+|Default `production`
+|in Produktions-JCasC fest `managed-git`; `THEMEN_REPO_URL` erforderlich, Branch-Default im Image `main`
+|Default `false`; explizite Freigabe und vollständiger Git-Kontext erforderlich
 |===
 
-Fuer das Produktionsimage kommen zusaetzlich `JENKINS_URL`,
-`JENKINS_ADMIN_ADDRESS`, `AD_DOMAIN`, `AD_SERVERS`, `AD_BIND_NAME`,
-`AD_BIND_PASSWORD`, `JENKINS_ADMIN_GROUP` und
-`JENKINS_AUTHENTICATED_GROUP` aus der Deployment-Konfiguration. Das
-Bind-Passwort ist als Secret zu injizieren und darf nicht in JCasC-Dateien oder
-im Repository stehen.
+Die drei Einstellungen sind unabhängig: `JENKINS_RUNTIME_MODE` steuert
+Laufzeitprüfungen, der Repository-Modus bestimmt die Eingangsquelle und
+`THEMEN_REPO_WRITE_BACK_ENABLED` erlaubt die Git-Übernahme. `managed-git`
+allein bedeutet weder Produktionsbetrieb noch Schreibfreigabe.
+
+`JENKINS_RUNTIME_MODE=dev` wählt *keine* JCasC-Datei aus. Der Entrypoint
+überspringt damit die Produktions-Pflichtprüfungen; zusätzlich beschränken Plugin
+und Gradle Git-Schreibzugriffe auf `file://`-Remotes. Welche JCasC geladen wird,
+bestimmt separat `CASC_JENKINS_CONFIG`. Das Image enthält die Produktions-JCasC;
+für Dev muss die lokale Datei gemountet und als JCasC-Quelle angegeben werden.
+`bin/start.sh` erledigt diese Auswahl für den Hoststart ausdrücklich selbst.
+
+== Umgebungsvariablen
+
+Die Tabellen nennen die von unseren Skripten und Konfigurationen verwendeten
+Schnittstellen, nicht sämtliche Optionen des Jenkins-Basisimages oder der JVM.
+Ein mit «fest» bezeichneter Wert wird beim jeweiligen Start gesetzt und ist dort
+kein ENV-Override. ENV-Werte müssen an den tatsächlichen Verbraucher übergeben
+werden; eine Variable in der Host-Shell oder `.env` gelangt nicht automatisch
+in einen Container.
+
+=== Laufzeit und JCasC
+
+[cols="2,2,5",options="header"]
+|===
+|Variable |Verbraucher |Default, Bedingung und Wirkung
+|`JENKINS_RUNTIME_MODE` |Entrypoint, Plugin, Git-Gradle
+|Image/Entrypoint: `production`; `start.sh` und Dev-Compose: fest `dev`. Im Image sind nur `dev` und `production` erlaubt. Keine automatische JCasC-Auswahl.
+|`CASC_JENKINS_CONFIG` |Jenkins/JCasC
+|Image: `/usr/share/jenkins/ref/casc_configs/jenkins.yaml` (Produktionsinhalt). `start.sh`: fest die lokale `casc/jenkins.yaml`. Dev-Compose: fest `/opt/datenportal/casc/jenkins-local.yaml` mit lokalem Mount.
+|`JENKINS_URL` |beide JCasC-Dateien, Produktionsprüfung
+|Hoststart: `http://localhost:<JENKINS_PORT>/`; Dev-Compose setzt die lokale URL. Produktion: nichtleer erforderlich, extern erreichbare Jenkins-URL.
+|`TZ` |Containerlaufzeit
+|Image-Default `Europe/Zurich`; der Image-Build richtet auch die Systemzeitzone darauf ein. Der Hoststart setzt keine eigene Systemzeitzone.
+|`JENKINS_PORT` |`start.sh`, Installationsskript; Dev-Compose
+|Default `8080`; am Host HTTP-Port beziehungsweise Portprüfung, in Compose veröffentlichter Host-Port.
+|`JENKINS_HOME_DIR`, `JENKINS_HOME` |Hoststart und Plugin-Installation
+|Priorität `JENKINS_HOME_DIR`, dann `JENKINS_HOME`, dann `jenkins-home/`. `start.sh` exportiert das Ergebnis als `JENKINS_HOME`. Im Image liegt das Home bei `/var/jenkins_home`; `JENKINS_HOME_DIR` steuert kein Docker-Volume.
+|`JENKINS_ADMIN_ADDRESS` |Produktions-JCasC/Entrypoint
+|Produktion: erforderlich; lokale JCasC verwendet eine feste lokale Adresse.
+|`AD_DOMAIN`, `AD_SERVERS`, `AD_BIND_NAME` |Produktions-JCasC/Entrypoint
+|Produktion: alle erforderlich; AD-Domain, Server und Bind-Identität. Kein Dev-Default für AD.
+|`AD_BIND_PASSWORD` |Produktions-JCasC/Entrypoint
+|Produktion: erforderlich; ausschliesslich aus externem Secret-Management bereitstellen.
+|`JENKINS_ADMIN_GROUP`, `JENKINS_AUTHENTICATED_GROUP` |Produktions-JCasC/Entrypoint
+|Produktion: beide erforderlich; Administratorgruppe beziehungsweise Gruppe mit globalem Leserecht. Jobrechte kommen weiterhin aus den Themenrepo-Teams.
+|===
+
+=== Repository und Git
+
+[cols="2,2,5",options="header"]
+|===
+|Variable |Verbraucher |Default, Bedingung und Wirkung
+|`THEMEN_REPO_MODE` |`start.sh`, lokale JCasC
+|Hoststart: `managed-git`, alternativ `working-tree`. Dev-Compose setzt `working-tree` fest. Die Produktions-JCasC setzt `managed-git` fest und wertet diese ENV dort nicht aus.
+|`THEMEN_REPO_URL` |Hoststart, beide JCasC-Dateien, Produktionsprüfung
+|Hoststart mit `managed-git`: ohne Override `file://` auf `THEMEN_REPO_DIR`; bei `working-tree` wird sie geleert. Produktion: erforderlich. Dev-Compose setzt sie leer. Keine Tokens oder Passwörter in die URL einbetten.
+|`THEMEN_REPO_PATH` |Hoststart, lokale JCasC
+|Hoststart mit `working-tree`: ohne Override `THEMEN_REPO_DIR`. Dev-Compose: fest `/workspace/themenrepo`. Produktions-JCasC setzt den Pfad leer.
+|`THEMEN_REPO_BRANCH` |Hoststart, beide JCasC-Dateien
+|Default in Hoststart, Image und Dev-Compose: `main`. Branch für Git-Checkouts; ein Arbeitsbaum-Snapshot wechselt keinen Branch.
+|`THEMEN_REPO_CREDENTIALS_ID` |beide JCasC-Dateien → Plugin/Pipeline
+|Default leer; ID eines Jenkins-Benutzername/Passwort-Credentials für HTTPS-Git. Die ENV enthält nur die Referenz, nicht das Token, und erzeugt selbst kein Credential.
+|`THEMEN_REPO_WRITE_BACK_ENABLED` |beide JCasC-Dateien → Plugin/Pipeline
+|Default `false`; für Commit/Push ausdrücklich `true`. `working-tree` bleibt ohne Schreiboperationen; Dev erlaubt nur lokale `file://`-Schreibtests.
+|`THEMEN_REPO_COMMITTER_NAME`, `THEMEN_REPO_COMMITTER_EMAIL` |beide JCasC-Dateien → Plugin/Pipeline
+|Default jeweils leer; beide bei Git-Rückschreiben erforderlich. Technische Commit-Identität, keine Zugangsdaten.
+|===
+
+Die Referenz auf ein privates HTTPS-Credential wird administrativ oder über eine
+separate JCasC-Secrets-Konfiguration aufgelöst. Das Benutzername/Passwort-Credential
+muss in Jenkins bereits existieren. Die Pipeline verwendet die Git-Installation
+`Default`. Die genaue Priorität der Seeder-Overrides und die Snapshot-Regeln stehen
+in der link:https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin/src/branch/main/docs/biblios/entwicklung/checkout-und-konfiguration.adoc[Plugin-Checkout-Dokumentation].
+
+=== S3
+
+Diese Variablen werden von Gradle in Project Properties umgesetzt und von der
+S3-Hilfsfunktion des Themenrepos gelesen. Pflichtwerte werden erst bei Ausführung
+einer S3-Funktion geprüft. Der Standardjob lädt den angenommenen Gesamtstand
+öffentlich herunter und publiziert nur mit ausdrücklichem `s3Publish=true`.
+Der optionale Portal-Reload folgt nach der Übernahme. opendata.swiss bleibt ausgenommen.
+
+[cols="2,2,5",options="header"]
+|===
+|Variable |Gradle-Property |Default beziehungsweise Pflichtbedingung
+|`ORG_GRADLE_PROJECT_s3Publish` |`s3Publish` |Default `false`; Compose aktiviert Garage-Publikation ausdrücklich.
+|`ORG_GRADLE_PROJECT_publicationManifestUrl` |`publicationManifestUrl` |Pflicht für normale Läufe: aus Jenkins erreichbare öffentliche Adresse von `current.json`.
+|`ORG_GRADLE_PROJECT_catalogDownloadBase` |`catalogDownloadBase` |Öffentliche Downloadbasis für neue Distributionen; Compose: `http://localhost:<public-port>/ch.so.daten`.
+|`ORG_GRADLE_PROJECT_portalReloadUrl` |`portalReloadUrl` |Pflicht bei angefordertem Reload; administrativer POST-Endpunkt.
+|`ORG_GRADLE_PROJECT_portalReloadToken` |`portalReloadToken` |Secret; Pflicht bei Reload, nie in Kommandozeilen oder Logs ausgeben.
+|`ORG_GRADLE_PROJECT_s3Endpoint` |`s3Endpoint` |Kein Default im gemeinsamen Build; für Upload erforderlich.
+|`ORG_GRADLE_PROJECT_s3Region` |`s3Region` |Kein Default; für Upload erforderlich.
+|`ORG_GRADLE_PROJECT_s3BucketName` |`s3BucketName` |Kein Default; für Upload erforderlich.
+|`ORG_GRADLE_PROJECT_s3AccessKey` |`s3AccessKey` |Für Upload erforderlich; extern als Secret injizieren.
+|`ORG_GRADLE_PROJECT_s3SecretKey` |`s3SecretKey` |Für Upload erforderlich; extern als Secret injizieren.
+|`ORG_GRADLE_PROJECT_s3Acl` |`s3Acl` |Optional, Default `private`.
+|===
+
+Die lokalen Garage-Werte und deren `DATENPORTAL_S3_*`-Overrides sind
+Compose-Konfiguration des Dev-Stacks, keine zusätzlichen Jenkins-Plugin-Felder.
+Die fachliche Upload-Schnittstelle beschreibt das
+link:https://codeberg.org/edigonzales/datenportal-themenrepo/src/branch/main/docs/biblios/entwicklung/s3-upload.adoc[Themenrepo].
+
+=== Java und Offline-Bundle
+
+[cols="2,2,5",options="header"]
+|===
+|Variable |Verbraucher |Default, Bedingung und Wirkung
+|`JAVA17_HOME`, `JAVA21_HOME` |Java-Auflösung der Hostskripte
+|Optionale explizite JDK-Verzeichnisse für GRETL/Gradle beziehungsweise Jenkins. Ohne Override: macOS-Java-Auflösung, SDKMAN, passendes `JAVA_HOME`, dann Java aus `PATH`; fehlt eine passende Version, bricht der Start ab.
+|`JAVA_ENV_BASE_PATH` |Java-Hilfsskript der Hostskripte
+|Default eingehendes `PATH`; Basis-Suchpfad, vor den beim Java-Wechsel das jeweilige JDK gesetzt wird. Normalerweise nicht anzupassen.
+|`JAVA_HOME` |Hostskripte/JVM
+|Kann als passende Java-Version erkannt werden; die Skripte setzen es anschliessend auf die jeweils aufgelöste Version. Das Image bringt die benötigten JDKs mit.
+|`JAVA_OPTS` |Hoststart; Jenkins-Basisimage
+|Hoststart: optional, leer; zusätzliche JVM-Optionen. Im Container gilt das Verhalten des Jenkins-Basisimages.
+|`JENKINS_JAVA_OPTS` |Jenkins-Basisimage
+|Image-Default `-Djenkins.install.runSetupWizard=false`; bei eigenen JVM-/Truststore-Optionen erhalten. Wird von unserem Hoststart nicht ausgewertet.
+|`THEMEN_REPO_DIR` |Bundle-/Image-Build, Hoststart, Image-Tests
+|Default Schwester-Repo `../datenportal-themenrepo`; Quelle von Build-Vertrag und Modellen. Beim Hoststart zusätzlich Fallback für lokale Runtime-URL/-Pfad. Wählt im Produktionsimage kein Runtime-Repository aus.
+|`OFFLINE_BUNDLE_DIR` |Hoststart, Bundle-/Image-Build
+|Default `build/offline-bundle`. Bei `build-offline-bundle.sh` hat das erste Positionsargument Vorrang. Bei direktem Gradle-Bundle-Build hat `-PofflineBundleDir` Vorrang vor ENV; entsprechend `-PthemenRepoDir` vor `THEMEN_REPO_DIR`.
+|`SKIP_OFFLINE_BUNDLE` |`start.sh`
+|Default `0`; `1` verwendet ein vorhandenes Bundle. Spart weder Plugin-Installation noch die Host-Extension-Installation und garantiert keinen vollständig netzfreien Jenkins-Start.
+|`GRADLE_JAVA_HOME_17` |Themenrepo-Wrapper
+|Hostskripte setzen fest das aufgelöste Java-17-Home; Image `/opt/java/openjdk17`.
+|`DATENPORTAL_MODELS_DIR` |Publikations-Gradle
+|Hoststart setzt `<OFFLINE_BUNDLE_DIR>/models`; Image `/opt/datenportal/offline-bundle/models`. Ohne ENV verwendet die Publikation `shared/models` im Themenrepo.
+|`DATENPORTAL_OFFLINE_JARS_DIR` |Gradle-Initialisierung
+|Hoststart setzt `<OFFLINE_BUNDLE_DIR>/jars`; Image `/opt/datenportal/offline-bundle/jars`.
+|`GRADLE_USER_HOME` |Gradle
+|Hoststart setzt `<OFFLINE_BUNDLE_DIR>/gradle-user-home`; Image `/opt/datenportal/offline-bundle/gradle-user-home`.
+|`DUCKDB_EXTENSION_DIRECTORY` |Extension-Installer, Entrypoint, GRETL
+|Hoststart: überschreibbar, Default `build/duckdb-extensions-host`. Image: `/opt/datenportal/duckdb-extensions`. Enthält passende `postgres`, `spatial`, `excel`; Details unter xref:offline-bundle.adoc[Offline-Bundle].
+|===
+
+=== Build, Installation und Tests
+
+Diese Einstellungen gelten für die jeweiligen Hostskripte. Eine geänderte
+Image-Build-Variable ändert kein bereits laufendes Jenkins.
+
+[cols="2,2,5",options="header"]
+|===
+|Variable |Verbraucher |Default, Bedingung und Wirkung
+|`JENKINS_VERSION` |Hoststart, Image-Build
+|`2.555.2`; heruntergeladenes WAR beziehungsweise Version des Default-Basisimages. Vorhandene lokale WAR-Dateien werden beim Start nicht erneut geladen.
+|`PLUGIN_MANAGER_VERSION` |Hoststart
+|`2.14.0`; heruntergeladener Plugin-Manager, vorhandene Datei wird wiederverwendet.
+|`IMAGE_NAME`, `IMAGE_VERSION` |Image-Build; DuckDB-Image-Test
+|`datenportal-jenkins:local` beziehungsweise `local`; Image-Tag und OCI-Versionslabel. `test-image-duckdb.sh` nutzt ohne Positionsargument `IMAGE_NAME`; der Publikations-Test verwendet dagegen ohne Argument fest `datenportal-jenkins:local`.
+|`JENKINS_IMAGE` |Image-Build
+|`jenkins/jenkins:<JENKINS_VERSION>-lts-jdk21`; überschreibbares Basisimage.
+|`TEMURIN17_VERSION` |Image-Build
+|`17.0.15+6`; zusätzlich installiertes Java 17.
+|`PLUGIN_SOURCE` |Image-Build
+|`auto`; alternativ `local` oder `maven`. `auto` baut bei vorhandenem `PLUGIN_REPO` lokal, sonst erfolgt Maven-Auflösung. Ein lokaler Buildfehler löst keinen Maven-Fallback aus.
+|`PLUGIN_REPO` |Image-Build, Installation, Fresh-Start
+|Default Schwester-Repo `../datenportal-jenkins-gretl-plugin`; beim Installationsskript relativ zu `JENKINS_DEV_HOME`.
+|`PLUGIN_HPI_SOURCE` |Image-Build, Fresh-Start
+|Image-Build: leer, expliziter Pfad umgeht die Quellenauswahl. Fresh-Start: `<PLUGIN_REPO>/target/jenkins-gretl-datenportal-plugin.hpi`, muss bereits existieren. Das Installationsskript erhält einen abweichenden HPI-Pfad als erstes Positionsargument.
+|`PLUGIN_GROUP`, `PLUGIN_ARTIFACT`, `PLUGIN_VERSION` |Image-Build/Maven-Auflösung
+|`ch.so.agi.jenkins`, `jenkins-gretl-datenportal-plugin`, `0.1.0-SNAPSHOT`. Die Version wird auch als Image-Label verwendet.
+|`PLUGIN_REPOSITORY_URL`, `MAVEN_REPO_LOCAL` |Image-Build/Maven-Auflösung
+|`https://jars.interlis.guru/snapshots` und `$HOME/.m2/repository`.
+|`GRETL_VERSION` |Image-Build
+|Ohne Override aus dem Themenrepo-Build-Vertrag, sonst `unknown`. Setzt das Image-Label; die tatsächlich gebündelte GRETL-Version bestimmt der Themenrepo-Build-Vertrag.
+|`THEMEN_REPO_REVISION`, `PLUGIN_REPO_REVISION` |Image-Build
+|Ohne Override jeweiliges lokales Git-HEAD, sonst `unknown`; nur Herkunftslabels, keine Checkout-Steuerung.
+|`JENKINS_DEV_HOME` |Plugin-Installationsskript
+|Default Root dieses Repositories; Basis für Home- und Plugin-Repo-Fallbacks.
+|`FRESH_JENKINS_HOME_DIR` |`start-fresh.sh`
+|`build/jenkins-home-fresh`; muss unter dem `build/`-Verzeichnis liegen. Ein vorhandenes Ziel wird gelöscht und neu angelegt; nicht für ein zu erhaltendes Jenkins-Home verwenden.
+|`RUN_PUBLICATION_TESTS` |Image-Build
+|Default `0`; `1` ergänzt den obligatorischen DuckDB-Smoke-Test um die Lieferfolgetests.
+|`PILOT_REPO_DIR` |Publikations-Image-Test
+|Default Schwester-Repo `../datenportal-pilot-daten`; Fixture-Quelle. `THEMEN_REPO_DIR` bestimmt die Themenrepo-Quelle; Testimage als Positionsargument, Default `datenportal-jenkins:local`.
+|===
+
+== Wann Änderungen wirksam werden
+
+[cols="2,5",options="header"]
+|===
+|Änderung |Erforderlicher Schritt
+|ENV beim lokalen Shellstart
+|Jenkins beenden und mit den neuen exportierten Werten beziehungsweise ENV-Zuweisungen starten. Fest gesetzte Skriptwerte lassen sich nicht durch ENV überschreiben.
+|Container-ENV, Mounts oder Image
+|Deployment beziehungsweise Compose-Service mit der neuen Konfiguration neu erstellen. Ein blosses `docker compose restart` übernimmt keine geänderten Container-ENV-Werte.
+|JCasC-Inhalt
+|Mit der richtigen Datei neu starten oder JCasC gezielt administrativ neu laden. Eine neue Prozessumgebung benötigt weiterhin einen neuen Prozess/Container.
+|Repository-URL, Branch, Modus, Seeder-Overrides
+|Konfiguration anwenden und Seeder erneut ausführen: die aufgelösten Repository-Werte werden auf den erzeugten Jobs gespeichert.
+|Git-Credential-ID, Schreibfreigabe, Commit-Identität
+|Globale Konfiguration anwenden; diese Felder werden beim Vorbereiten eines neuen Build-Workspaces aktuell gelesen. Dafür allein ist kein neuer Seed erforderlich.
+|Lokale Änderungen im `working-tree`, auch nicht eingecheckte Dateien
+|Seeder erneut ausführen; der nächste Build kopiert diesen Snapshot. Ergebnisse eines Vorschaujobs werden nie automatisch zum nächsten Eingang.
+|Job-/Team-YAML oder Jenkinsfile im Themenrepo
+|Im Git-Modus Änderungen auf dem konfigurierten Branch bereitstellen, dann Seeder ausführen. Im Snapshot-Modus reicht der aktualisierte lokale Arbeitsbaum plus Seed.
+|Datenblätter/Katalog im `managed-git`-Modus
+|Der Build erstellt einen frischen Remote-Checkout. Ein Seed ist zusätzlich nötig, wenn Jobdefinition, Themenauswahl oder Formulardaten nachgeführt werden sollen.
+|===
+
+Dev-Compose setzt Modus, URL, Pfad und JCasC-Quelle explizit. Ein gleichnamiger
+Eintrag in `.env` überschreibt solche Literale nicht. Nur im Compose-YAML
+referenzierte Variablen werden eingesetzt. Änderungen an diesen Festlegungen
+benötigen eine angepasste Compose-Konfiguration beziehungsweise eine explizite
+Override-Datei; Details gehören in die Stack-Dokumentation.
 
 == GRETL-S3-Runtime-Konfiguration
 
@@ -210,24 +352,50 @@ fachlichen Vertrag des Datenportals.
 * Plugin-Konfiguration, Scanner und Seed-Logik:
   link:https://codeberg.org/edigonzales/datenportal-jenkins-gretl-plugin[datenportal-jenkins-gretl-plugin]
 
-== Git-Rückschreiben
+== Git-Rückschreiben und aktueller Lieferumfang
 
-Beide JCasC-Dateien referenzieren folgende optionale Umgebungsvariablen:
+Die Variablen sind oben unter «Repository und Git» beschrieben. Nach erfolgreicher
+Vorbereitung prüft Gradle sauberen Checkout, Ausgangsrevision, Branch, Fetch-/Push-URL
+und unveränderten Remote-Stand. Es übernimmt ausschliesslich das ausgewählte
+Datenblatt. Der Katalogstand wird ausschliesslich über S3 fortgeführt. Es gibt kein Force-Push,
+automatisches Rebase oder automatische Konfliktauflösung. Erst ein erfolgreicher
+Push übernimmt das Datenblatt in Git. Erst das anschliessende Umschalten von
+`current.json` übernimmt den neuen S3-Gesamtstand. Ein späterer Fehler kann
+daher ein bereits zurückgeschriebenes Datenblatt bei noch altem S3-Verweis hinterlassen.
 
-[cols="1,2",options="header"]
-|===
-|Variable |Bedeutung und Default
-|`THEMEN_REPO_CREDENTIALS_ID` |Jenkins-Credential-ID für HTTPS-Git, leer
-|`THEMEN_REPO_WRITE_BACK_ENABLED` |ausdrückliche Schreibfreigabe, `false`
-|`THEMEN_REPO_COMMITTER_NAME` |technischer Git-Commit-Name, leer
-|`THEMEN_REPO_COMMITTER_EMAIL` |technische Git-E-Mail, leer
-|===
+Die Standardpipeline hält die gemeinsame Lockable-Resources-Sperre
+`datenportal-topic-repository` vom Build-Checkout bis zum Ende des gesamten
+Gradle-Aufrufs. Das serialisiert die Lieferverarbeitung aller Organisationen,
+obwohl Jenkins zwei Executors hat. `disableConcurrentBuilds()` verhindert
+zusätzlich parallele Builds desselben Jobs.
 
-Das zugehörige Benutzername/Passwort-Credential wird administrativ oder über eine
-separate, lokale JCasC-Secrets-Konfiguration bereitgestellt. Tokens gehören
-weder in Repository-URLs noch in versionierte Konfiguration.
-Die Git-Installation heisst `Default`. Lockable Resources stellt die gemeinsame
-Ressource `datenportal-topic-repository` bereit.
-`working-tree` bleibt unabhängig von der globalen Freigabe immer Vorschau.
-Die normale lokale Konfiguration schreibt nicht. Schreibtests verwenden nur
-ein eigens erstelltes lokales Bare-Repository.
+Der Einstieg `publishToDatenportal` führt Vorbereitung, optionale S3-Publikation,
+Git-Übernahme und optionalen Portal-Reload in einem Gradle-Aufruf aus.
+`PUBLICATION_MODE=repository-metadata` erlaubt einen gezielten Repository-Abgleich
+ohne Upload; `delivery` verlangt weiterhin eine Datei. `RELOAD_PORTAL` ist
+standardmässig `false`. Der Initialaufbau bleibt ein administrativer Root-Task
+bei pausierten Standardjobs, keine dritte Formularvariante.
+
+S3- und Git-Freigaben sind unabhängig konfiguriert. Ohne S3-Freigabe erzeugt der
+Standardablauf nur eine Vorschau und führt auch kein Git oder Reload aus.
+`working-tree` verbietet Git weiterhin, kann aber ausdrücklich nach Garage
+publizieren. Der nächste Lauf liest dann den angenommenen S3-Stand; nur der
+Repository-Checkout bleibt der Seeder-Snapshot.
+
+Die Standardpipeline startet Gradle für HTTP-Downloads ohne `--offline`, weil
+das Download-Plugin diesen Schalter auch auf Fachdatenzugriffe anwendet.
+Die Abhängigkeiten stammen weiterhin aus dem Offline-Bundle. Echte Offline-
+Vorbereitungstests verwenden einen lokalen `file://`-Verweis ohne Schreibfreigabe.
+
+Ausgaben, direkte Gradle-Properties und fachliche Lieferregeln stehen im
+link:https://codeberg.org/edigonzales/datenportal-themenrepo/src/branch/main/docs/biblios/entwicklung/lieferverarbeitung.adoc[Themenrepo-Vertrag zur Lieferverarbeitung].
+
+== Zusätzliche Compose-Einstellungen für Publikation
+
+`DATENPORTAL_S3_PUBLISH` (Default `true`) setzt die eigene Garage-Schreibfreigabe.
+`DATENPORTAL_PUBLICATION_MANIFEST_URL` hat den Default
+`http://downloads:8081/ch.so.daten/current.json` im Compose-Netz.
+`DATENPORTAL_PORTAL_RELOAD_URL` und `DATENPORTAL_PORTAL_RELOAD_TOKEN` bleiben
+standardmässig leer; das Token ist ein externes Secret.
+Änderungen an diesen ENV-Werten erfordern ein Neuerstellen des Jenkins-Containers.
+Neue Formularparameter und geänderte Jenkinsfiles erfordern einen Seeder-Lauf.

@@ -14,18 +14,10 @@ Fuer den lokalen Start werden benoetigt:
 * Java 21 fuer Jenkins
 * Java 17 fuer GRETL und den Themenrepo-Wrapper
 
-Optionale lokale Overrides:
-
-* `JAVA21_HOME`
-* `JAVA17_HOME`
-* `THEMEN_REPO_DIR`
-* `THEMEN_REPO_URL`
-* `THEMEN_REPO_PATH`
-* `THEMEN_REPO_MODE` (`managed-git` oder `working-tree`)
-* `THEMEN_REPO_BRANCH`
-* `JENKINS_HOME_DIR` beziehungsweise `JENKINS_HOME`
-* `JENKINS_PORT`
-* `SKIP_OFFLINE_BUNDLE=1`
+Modi, Defaults und alle Overrides stehen in der
+xref:referenz-konfiguration.adoc[zentralen Konfigurationsreferenz]. Der Hoststart
+setzt `JENKINS_RUNTIME_MODE=dev` und die lokale JCasC fest; er startet keine
+Produktionskonfiguration.
 
 == Standardstart
 
@@ -40,6 +32,8 @@ cd ../datenportal-jenkins-dev
 . das Offline-Bundle bauen oder aktualisieren;
 . Jenkins-WAR und Plugin-Manager bei Bedarf herunterladen;
 . Jenkins-Plugins aus `plugins.txt` installieren oder aktualisieren;
+. native DuckDB-Extensions `postgres`, `spatial` und `excel` für den Host
+  installieren beziehungsweise prüfen und den ili2duckdb-Suchpfad einrichten;
 . Jenkins mit `casc/jenkins.yaml` starten.
 
 Ein reiner Plugin-Neustart kann das bereits gebaute Bundle wiederverwenden:
@@ -49,13 +43,45 @@ Ein reiner Plugin-Neustart kann das bereits gebaute Bundle wiederverwenden:
 SKIP_OFFLINE_BUNDLE=1 ./bin/start.sh
 ----
 
-Der Start exportiert dabei unter anderem:
+`SKIP_OFFLINE_BUNDLE=1` überspringt nur den Bundle-Bau. Plugin-Installation und
+Host-Extension-Installation laufen weiterhin; der gesamte Start wird dadurch
+nicht garantiert netzfrei.
 
-* `THEMEN_REPO_URL`
-* `THEMEN_REPO_BRANCH`
-* `DATENPORTAL_OFFLINE_JARS_DIR`
-* `GRADLE_USER_HOME`
-* `GRADLE_JAVA_HOME_17`
+== Eingangsstand wählen
+
+Lokaler Git-Checkout, ausschliesslich als Vorschau:
+
+[source,bash]
+----
+THEMEN_REPO_MODE=managed-git THEMEN_REPO_BRANCH=main \
+  THEMEN_REPO_WRITE_BACK_ENABLED=false ./bin/start.sh
+----
+
+Ohne gesetzte `THEMEN_REPO_URL` verwendet das Skript `file://` auf das lokale
+Schwester-Repository. Eine bereits exportierte URL hat Vorrang. Der Default von
+`THEMEN_REPO_DIR` ist `../datenportal-themenrepo`; das Skript leitet eine absolute
+`file://`-URL daraus ab. Nur eingecheckte Änderungen auf dem gewählten Branch werden
+verwendet. Ein HTTPS-Repository kann ausdrücklich über `THEMEN_REPO_URL` gewählt
+werden; auch bei dieser Quelle bleibt der Hoststart eine Dev-Laufzeit.
+
+Snapshot einschliesslich nicht eingecheckter Änderungen:
+
+[source,bash]
+----
+THEMEN_REPO_MODE=working-tree THEMEN_REPO_WRITE_BACK_ENABLED=false ./bin/start.sh
+----
+
+Der Quellpfad ist `THEMEN_REPO_PATH`, ersatzweise `THEMEN_REPO_DIR`. In diesem
+Modus leert das Skript eine eventuell gesetzte URL. Nach dem Start den Seeder
+laufen lassen. Spätere lokale Änderungen werden erst mit einem erneuten Seed
+übernommen. Jeder Build arbeitet auf einer eigenen Snapshot-Kopie; weder das
+externe Repo noch der Seeder-Snapshot werden durch Vorschauergebnisse verändert.
+
+Für eine neue ENV-Konfiguration den Hostprozess beenden und erneut starten.
+Nach Änderungen an Repository-Modus, URL oder Branch auch den Seeder erneut
+ausführen. Ein Seed allein ändert keine Prozessumgebung. Lieferfolgen mit echtem
+Commit/Push werden ausschliesslich gegen ein separates lokales Testrepository
+geprüft; dafür gibt es den xref:offline-bundle.adoc[Publikations-Image-Test].
 
 == Lokaler Zugriff
 

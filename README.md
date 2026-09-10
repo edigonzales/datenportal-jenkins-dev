@@ -103,13 +103,18 @@ aus der Teams-Datei synchronisiert. Die Teammitglieder werden über ihre
 Jenkins-Benutzer-IDs aufgelöst; in einer produktiven Umgebung müssen diese IDs
 zur konfigurierten AD-/LDAP-/Entra-Authentisierungsquelle passen.
 
-Der Seed-Lauf kennt zwei Modi. `managed-git` ist der produktionsnahe Default:
+Die zentrale [Konfigurationsreferenz](docs/biblios/entwicklung/referenz-konfiguration.adoc)
+vergleicht Shellstart, Dev-Compose und Produktion. Sie enthält ENV-Defaults,
+Pflichtwerte, Git-Schreibfreigabe und die nötigen Schritte nach Änderungen.
+
+Der Seed-Lauf kennt zwei Modi. `managed-git` ist der Default von `bin/start.sh`:
 Jenkins aktualisiert seinen internen Checkout mit dem committed Stand des
 konfigurierten Branches. `working-tree` ist nur für lokale Entwicklung gedacht:
 Beim Seed-Lauf wird der externe Arbeitsbaum inklusive uncommitteter und
 untracked Änderungen in einen Jenkins-internen Snapshot kopiert. Das externe
 Themenrepo wird dabei nicht verändert; der Snapshot bleibt bis zum nächsten
-Seed-Lauf unverändert. Für einen lokalen Test mit diesem Modus:
+Seed-Lauf unverändert. Der Dev-Stack verwendet diesen Snapshot-Modus bereits
+fest. Für einen lokalen Shellstart mit diesem Modus:
 
 ```bash
 THEMEN_REPO_MODE=working-tree ./bin/start.sh
@@ -144,7 +149,11 @@ Das gemeinsame Image heisst `datenportal-jenkins`. Der lokale Default-Tag ist
 `IMAGE_VERSION` gesetzt werden. Es unterstützt die Laufzeitmodi
 `JENKINS_RUNTIME_MODE=dev` und `JENKINS_RUNTIME_MODE=production`. Im
 Produktionsmodus prüft der Entrypoint die AD- und Deployment-Variablen; im
-Dev-Modus wird die lokale JCasC von aussen gemountet.
+Dev-Modus muss die lokale JCasC von aussen gemountet und über
+`CASC_JENKINS_CONFIG` ausgewählt werden. Die Modusvariable selbst wählt keine
+JCasC-Datei aus. Die mitgelieferte Produktions-JCasC setzt den Repository-Modus
+fest auf `managed-git`. Git-Rückschreiben bleibt in beiden Laufzeiten
+standardmässig deaktiviert; auch `managed-git` aktiviert es nicht automatisch.
 
 Das Image enthält den Jenkins-Controller, Java 17 für GRETL, das vorbereitete
 Offline-Bundle und das beim Image-Bau installierte Datenportal-Plugin. Das
@@ -175,8 +184,7 @@ Der Test verwendet `THEMEN_REPO_DIR` (Default `../datenportal-themenrepo`)
 fuer Wrapper und Gradle-Initialisierung. Er benoetigt Docker, aber kein
 bestehendes Jenkins-Home. Die technischen Fixtures unter `tests/duckdb` dienen
 ausschliesslich der Laufzeitpruefung; sie definieren keinen Publikationsjob.
-Das direkte Starten von Jenkins auf dem Host installiert diese
-plattformspezifischen Extensions nicht.
+Der lokale Shellstart installiert die Extensions ebenfalls für seine Plattform.
 
 Die Pluginquelle ist konfigurierbar:
 
@@ -229,3 +237,16 @@ Die Prüfung verwendet die Arbeitsstände der Schwester-Repositories
 ein separates lokales Bare-Repository. Alle GRETL-Prozesse laufen ohne Netzwerk.
 Details zu Modellen, Extensions und Ergebnissen stehen in der
 [Offline-Bundle-Dokumentation](docs/biblios/entwicklung/offline-bundle.adoc).
+
+### S3-Gesamtstand
+
+Der Standardjob liest `current.json` und die bezeichneten Gesamt-XTF über HTTP.
+`s3Publish=true` gibt die Publikation frei; Git benötigt zusätzlich seine bisherige
+Freigabe und schreibt nur das ausgewählte Datenblatt. Im Formular kann ohne Upload
+ein Repository-Datenblatt abgeglichen und optional das Portal neu geladen werden.
+Defaults und erforderliche ENV-Werte stehen in der
+[Konfigurationsreferenz](docs/biblios/entwicklung/referenz-konfiguration.adoc).
+
+Der Offline-Test führt keine Git-Schreiboperationen aus. Die ergänzende
+S3-/Git-Integration mit realer Garage und isoliertem Bare-Repository liegt im
+Dev-Stack: `python3 scripts/test-publication.py`.
