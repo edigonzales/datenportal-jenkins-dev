@@ -123,7 +123,10 @@ Diese Variablen werden von Gradle in Project Properties umgesetzt und von der
 S3-Hilfsfunktion des Themenrepos gelesen. Pflichtwerte werden erst bei Ausführung
 einer S3-Funktion geprüft. Der Standardjob lädt den angenommenen Gesamtstand
 öffentlich herunter und publiziert nur mit ausdrücklichem `s3Publish=true`.
-Der optionale Portal-Reload folgt nach der Übernahme. opendata.swiss bleibt ausgenommen.
+Nach XTF-Übernahme folgen Upload und öffentliches Rücklesen von `opendata.rdf`,
+danach der optionale Portal-Reload. RDF verwendet dieselbe S3-Freigabe und
+Konfiguration; seine Leseadresse entsteht relativ zur Manifestadresse. Der
+tatsächliche opendata.swiss-Harvester-Anschluss bleibt ausgenommen.
 
 [cols="2,2,5",options="header"]
 |===

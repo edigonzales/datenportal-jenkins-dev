@@ -235,6 +235,9 @@ Die technische Langform-Doku liegt unter
 ### SQL-Lieferverarbeitung offline prüfen
 
 ```bash
+python3 -m venv build/publication-test-venv
+. build/publication-test-venv/bin/activate
+pip install -r tests/publication/requirements.txt
 ./bin/test-image-publication.sh datenportal-jenkins:local
 # Alternativ nach dem Image-Bau automatisch ausführen:
 RUN_PUBLICATION_TESTS=1 ./bin/build-image.sh
@@ -248,7 +251,9 @@ Details zu Modellen, Extensions und Ergebnissen stehen in der
 
 ### S3-Gesamtstand
 
-Der Standardjob liest `current.json` und die bezeichneten Gesamt-XTF über HTTP.
+Der Standardjob erzeugt zusätzlich `opendata.rdf` und veröffentlicht die Datei
+nach bestätigter XTF-Annahme. RDF-Fehler bleiben im Bericht getrennt und
+verhindern den nachfolgenden Reload. Der Standardjob liest `current.json` und die bezeichneten Gesamt-XTF über HTTP.
 `s3Publish=true` gibt die Publikation frei; Git benötigt zusätzlich seine bisherige
 Freigabe und schreibt nur das ausgewählte Datenblatt. Im Formular kann ohne Upload
 ein Repository-Datenblatt abgeglichen und optional das Portal neu geladen werden.

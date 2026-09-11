@@ -10,6 +10,8 @@ import subprocess
 import sys
 import tempfile
 import xml.etree.ElementTree as ET
+from rdf_checks import check_export
+from rdf_matrix import run_matrix
 
 RUNTIME = Path(__file__).resolve().parents[2]
 TOPICS = Path(os.environ.get('THEMEN_REPO_DIR', RUNTIME.parent / 'datenportal-themenrepo')).resolve()
@@ -82,6 +84,8 @@ def delivery(name, data=None, metadata=None, issue=None, write=False, success=Tr
         return log
     if success:
         report = json.loads((OUTPUT / 'report.json').read_text())
+        assert check_export(OUTPUT) == report['opendata']['datasetCount']
+        assert report['opendata']['status'] == 'not-published'
         assert report['mode'] == 'preview', report
         assert (OUTPUT / 'datasheets.xtf').is_file()
         assert (OUTPUT / 'metadata' / SHEET.name).is_file()
@@ -148,6 +152,7 @@ bootstrap = ['/test/repo/shared/bin/gradlew-java17.sh', '--offline', '--no-daemo
     '-I', '/test/repo/shared/gradle/init.gradle', '-p', '/test/repo', 'initializePublication',
     '-PpublicationManifestUrl=file:///test/accepted/current.json']
 docker(bootstrap, 'bootstrap')
+assert check_export(REPO / 'build/publication/outputs') == 0
 promote(REPO / 'build/publication/outputs')
 assert json.loads((STATE / 'current.json').read_text())['catalog'] is None
 docker(bootstrap, 'bootstrap-existing-rejected', success=False)
@@ -177,6 +182,7 @@ delivery('known-data', data='/test/DATA_FILE', issue='2025', write=True, extra=[
 def offices(path):
     return sorted(tuple(sorted((local(c), c.text) for c in e)) for e in ET.parse(path).iter() if local(e) == 'Office.Office')
 assert offices(WORK / 'offices-roundtrip.xtf') == offices(REPO / 'shared/data/offices.xtf')
+run_matrix(WORK, docker, CATALOG)
 initial_resources = resources()
 known_id = DATASET + '_2025'
 known_technical = technical(initial_resources[known_id])
@@ -200,6 +206,40 @@ def semantic_xtf(path):
 stable = semantic_xtf(CATALOG)
 delivery('stable-metadata-roundtrip', metadata='changed-dates.xtf', write=True)
 assert semantic_xtf(CATALOG) == stable
+
+# Vererbung bleibt in SQL: fehlende, leere und nur aus Leerraum bestehende Texte
+# müssen bereits im materialisierten XTF dieselben Serienangaben ergeben.
+for label, value in [('missing', None), ('empty', ''), ('whitespace', '   ')]:
+    def blank_issue(tree, value=value):
+        for issue in tree.iter():
+            if local(issue) != 'DatasetIssue' or text(issue, 'issueLabel') != '2025':
+                continue
+            for name in ('title', 'description', 'model', 'surveyMethod', 'dataAvailableFrom', 'furtherUses', 'auxiliaryData'):
+                field = child(issue, name)
+                if field is not None:
+                    issue.remove(field)
+                if value is not None:
+                    ET.SubElement(issue, '{'+NS+'}'+name).text = value
+    metadata('fallback-'+label+'.xtf', blank_issue)
+    delivery('rdf-series-fallback-'+label, metadata='fallback-'+label+'.xtf')
+    materialized = resources(OUTPUT/'published-catalog.xtf')
+    parent, issue = materialized[DATASET], materialized[known_id]
+    assert text(issue, 'title') == text(parent, 'title')+' 2025'
+    for name in ('description', 'model', 'surveyMethod', 'dataAvailableFrom', 'furtherUses', 'auxiliaryData'):
+        assert text(issue, name) == text(parent, name)
+
+def own_issue_texts(tree):
+    issue = next(e for e in tree.iter() if local(e)=='DatasetIssue' and text(e,'issueLabel')=='2025')
+    for name in ('title', 'description', 'surveyMethod', 'dataAvailableFrom', 'furtherUses', 'auxiliaryData'):
+        field = child(issue, name)
+        if field is None:
+            field = ET.SubElement(issue, '{'+NS+'}'+name)
+        field.text = 'Eigene Ausgabe: '+name+' & <Sonderzeichen>'
+metadata('own-issue-texts.xtf', own_issue_texts)
+delivery('rdf-own-issue-texts', metadata='own-issue-texts.xtf')
+issue = resources(OUTPUT/'published-catalog.xtf')[known_id]
+for name in ('title', 'description', 'surveyMethod', 'dataAvailableFrom', 'furtherUses', 'auxiliaryData'):
+    assert text(issue, name) == 'Eigene Ausgabe: '+name+' & <Sonderzeichen>'
 
 original_issue_count = issue_count()
 lines = (PILOT / DATASET / 'so_bevo_altersstruktur_2025.csv').read_text().splitlines()

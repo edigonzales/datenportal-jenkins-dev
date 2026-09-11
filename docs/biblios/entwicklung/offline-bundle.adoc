@@ -115,10 +115,14 @@ Die vollständige Vorbereitung und aufeinanderfolgende Lieferungen prüft:
 
 [source,bash]
 ----
+python3 -m venv build/publication-test-venv
+. build/publication-test-venv/bin/activate
+pip install -r tests/publication/requirements.txt
 ./bin/test-image-publication.sh datenportal-jenkins:local
 ----
 
-Der Test benötigt Docker, Python 3 sowie die Schwester-Repositories
+Der Test benötigt Docker, Python 3 mit den fest versionierten
+Testabhängigkeiten (RDFLib und pyparsing) sowie die Schwester-Repositories
 `datenportal-themenrepo` und `datenportal-pilot-daten`. Abweichende Pfade können
 über `THEMEN_REPO_DIR` und `PILOT_REPO_DIR` gesetzt werden. Alle GRETL-Prozesse
 laufen im tatsächlichen Image mit `--network none`. Die temporäre DuckDB liegt
@@ -130,6 +134,14 @@ Modellinhalt und Kennungen unabhängig von XML-Präfixen und Einrückung.
 Die Datenexportprüfung liest XLSX und Parquet vollständig zurück. Zusätzliche
 Fixtures prüfen die deklarierten Datentypen, führende Nullen in Textspalten,
 Spaltenreihenfolge, doppelte/leere Spaltennamen und Pflichtwerte.
+
+Die XSLT-Erzeugung und Exportprüfung laufen mit `XslTransformer` im bestehenden
+Image (Saxon HE 11.4) ohne Netzwerk. RDFLib liest die Ergebnisse unabhängig als
+Graph auf dem Testhost; es gehört nicht zum Laufzeit-Bundle. Die Tests prüfen
+alle vier Einzelstatus und sämtliche 16 Serien-/Ausgabestatus-Kombinationen,
+leere Kataloge, Kennungsfehler, Kontakte, Lizenzen, Formate und Datumswerte.
+Die Installation der Python-Testabhängigkeiten benötigt einmalig eine
+Paketquelle; die anschliessenden GRETL-Läufe bleiben offline.
 
 Die getrennte S3-/Git-Prüfung im Dev-Stack verwendet eine isolierte Garage-Instanz
 und ein lokales Bare-Repository; siehe dessen `scripts/test-publication.py`.
