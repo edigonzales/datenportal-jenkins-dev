@@ -11,7 +11,7 @@ Diese Seite ist die zentrale Referenz für die vom Jenkins-Dev-Repository
 verwendeten Einstellungen. Pfade wie `build/` beziehen sich auf dieses Repository;
 `../datenportal-themenrepo` und `../datenportal-jenkins-gretl-plugin` sind
 Schwester-Repositories. Die konkrete Compose-Konfiguration besitzt dagegen der
-link:https://codeberg.org/edigonzales/datenportal-dev-stack/src/branch/main/docs/biblios/entwicklung/konfiguration.adoc[Dev-Stack-Konfigurationsreferenz].
+link:https://codeberg.org/edigonzales/datenportal-dev-stack/src/branch/main/docs/biblios/konfiguration.adoc[Dev-Stack-Konfigurationsreferenz].
 
 [cols="2,1,3,2,2",options="header"]
 |===
@@ -144,7 +144,7 @@ Der optionale Portal-Reload folgt nach der Übernahme. opendata.swiss bleibt aus
 Die lokalen Garage-Werte und deren `DATENPORTAL_S3_*`-Overrides sind
 Compose-Konfiguration des Dev-Stacks, keine zusätzlichen Jenkins-Plugin-Felder.
 Die fachliche Upload-Schnittstelle beschreibt das
-link:https://codeberg.org/edigonzales/datenportal-themenrepo/src/branch/main/docs/biblios/entwicklung/s3-upload.adoc[Themenrepo].
+link:https://codeberg.org/edigonzales/datenportal-themenrepo/src/branch/main/docs/biblios/s3-upload.adoc[Themenrepo].
 
 === Java und Offline-Bundle
 
@@ -396,7 +396,7 @@ Die Abhängigkeiten stammen weiterhin aus dem Offline-Bundle. Echte Offline-
 Vorbereitungstests verwenden einen lokalen `file://`-Verweis ohne Schreibfreigabe.
 
 Ausgaben, direkte Gradle-Properties und fachliche Lieferregeln stehen im
-link:https://codeberg.org/edigonzales/datenportal-themenrepo/src/branch/main/docs/biblios/entwicklung/lieferverarbeitung.adoc[Themenrepo-Vertrag zur Lieferverarbeitung].
+link:https://codeberg.org/edigonzales/datenportal-themenrepo/src/branch/main/docs/biblios/lieferverarbeitung.adoc[Themenrepo-Vertrag zur Lieferverarbeitung].
 
 == Zusätzliche Compose-Einstellungen für Publikation
 

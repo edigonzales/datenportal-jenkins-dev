@@ -25,7 +25,7 @@ Nicht hierher gehoeren:
 
 Die folgenden Befehle betreffen den separaten Shellstart von Jenkins. Für das
 Gesamtsystem mit Garage, Editor und Portal gilt die
-[Dev-Stack-Inbetriebnahme](https://codeberg.org/edigonzales/datenportal-dev-stack/src/branch/main/docs/biblios/entwicklung/inbetriebnahme.adoc).
+[Dev-Stack-Inbetriebnahme](https://codeberg.org/edigonzales/datenportal-dev-stack/src/branch/main/docs/biblios/inbetriebnahme.adoc).
 Dort werden lokale Images, Pluginersatz im Compose-Volume, Seeder und Root-
 Initialisierung beschrieben. `working-tree` verhindert Git-Schreiben; S3 ist
 im Compose-Stack standardmässig freigegeben. Der Shellstart bleibt ohne
