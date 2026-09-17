@@ -96,7 +96,7 @@ export DATENPORTAL_OFFLINE_JARS_DIR="$OFFLINE_BUNDLE_DIR/jars"
 export GRADLE_USER_HOME="$OFFLINE_BUNDLE_DIR/gradle-user-home"
 export DUCKDB_EXTENSION_DIRECTORY="${DUCKDB_EXTENSION_DIRECTORY:-$ROOT_DIR/build/duckdb-extensions-host}"
 "$JAVA17_HOME/bin/java" -cp "$DATENPORTAL_OFFLINE_JARS_DIR/*" \
-  ch.so.agi.gretl.internal.duckdb.DuckDbExtensionInstaller postgres spatial excel httpfs
+  ch.so.agi.gretl.internal.duckdb.DuckDbExtensionInstaller postgres spatial excel httpfs s3
 "$ROOT_DIR/bin/configure-duckdb-extensions.sh"
 
 java_opts=(

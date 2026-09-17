@@ -48,11 +48,13 @@ Das Bundle besteht aus folgenden Teilen:
 |===
 
 Native DuckDB-Extensions sind kein Bestandteil dieses auf dem Host gebauten
-JAR-/Wrapper-Bundles. Das Dockerfile installiert `postgres`, `spatial` und
-`excel` anschliessend innerhalb des Linux-Images, passend zum JDBC-Treiber im
-Bundle. Sie liegen unter `/opt/datenportal/duckdb-extensions`; zur Laufzeit
-verweist `DUCKDB_EXTENSION_DIRECTORY` darauf. Dadurch werden keine
-Host-Binaerdateien fuer eine falsche Plattform in das Image uebernommen.
+JAR-/Wrapper-Bundles. Das Dockerfile installiert `postgres`, `spatial`,
+`excel`, `httpfs` und `s3` anschliessend innerhalb des Linux-Images, passend zum
+JDBC-Treiber im Bundle. DuckDB 1.5.2 behandelt `s3` als Alias von `httpfs`; ein
+separates `s3.duckdb_extension` wird deshalb nicht erwartet. Die Dateien liegen
+unter `/opt/datenportal/duckdb-extensions`; zur Laufzeit verweist
+`DUCKDB_EXTENSION_DIRECTORY` darauf. Dadurch werden keine Host-Binaerdateien
+fuer eine falsche Plattform in das Image uebernommen.
 
 Der technische Ablauf ist:
 
@@ -146,9 +148,10 @@ Paketquelle; die anschliessenden GRETL-Läufe bleiben offline.
 Die getrennte S3-/Git-Prüfung im Dev-Stack verwendet eine isolierte Garage-Instanz
 und ein lokales Bare-Repository; siehe dessen `scripts/test-publication.py`.
 
-Für den Playground-Katalog benötigt die native DuckDB zusätzlich `httpfs`.
-Docker-Build und Hoststart installieren sie über denselben GRETL-Installer wie
-die übrigen Extensions; der Job selbst verwendet nur `LOAD httpfs`.
+Für den Playground-Katalog benötigt die native DuckDB `httpfs`; `s3` ist in der
+gebündelten DuckDB-Version dessen Alias. Docker-Build und Hoststart installieren
+beide Namen über denselben GRETL-Installer wie die übrigen Extensions; der Job
+selbst verwendet `LOAD httpfs` und lädt damit keine Extension aus dem Netzwerk.
 `test-image-duckdb.sh` prüft die Installation unter `--network none` und führt
 mit einem Loopback-HTTP-Server den kanonischen View-SQL-Vertrag aus dem
 Themenrepo aus. Es werden keine Extensions während eines Jobs heruntergeladen.

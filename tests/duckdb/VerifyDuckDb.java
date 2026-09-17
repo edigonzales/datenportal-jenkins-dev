@@ -14,10 +14,14 @@ class VerifyDuckDb {
             statement.execute("SET extension_directory = " + literal(extensionDirectory.toString()));
             statement.execute("SET autoinstall_known_extensions = false");
             statement.execute("SET autoload_known_extensions = false");
-            for (String extension : List.of("postgres", "spatial", "excel", "httpfs")) {
+            for (String extension : List.of("postgres", "spatial", "excel", "httpfs", "s3")) {
                 statement.execute("LOAD " + extension);
-                // DuckDB stores the postgres alias as postgres_scanner.
-                String name = extension.equals("postgres") ? "postgres_scanner" : extension;
+                // DuckDB stores postgres as postgres_scanner and s3 as the httpfs alias.
+                String name = switch (extension) {
+                    case "postgres" -> "postgres_scanner";
+                    case "s3" -> "httpfs";
+                    default -> extension;
+                };
                 try (ResultSet result = statement.executeQuery(
                         "SELECT loaded, installed, install_path FROM duckdb_extensions() WHERE extension_name = " + literal(name))) {
                     require(result.next(), "Missing extension: " + extension);

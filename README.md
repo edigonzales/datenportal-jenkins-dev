@@ -173,13 +173,14 @@ Build-Quelle.
 Das Image verwendet `Europe/Zurich` als Systemzeitzone. Damit verwenden Jenkins,
 Gradle und Konsolenlogs automatisch CET beziehungsweise CEST.
 
-Das Image installiert die DuckDB-Extensions `postgres`, `spatial`, `excel` und `httpfs`
+Das Image installiert die DuckDB-Extensions `postgres`, `spatial`, `excel`, `httpfs`
+und `s3`
 beim Build mit dem JDBC-Treiber aus dem Offline-Bundle. Sie liegen unter
 `/opt/datenportal/duckdb-extensions`, ausserhalb des Jenkins-Homes, und sind
 zur Laufzeit nur lesbar. `DUCKDB_EXTENSION_DIRECTORY` macht diesen Pfad fuer
 GRETL verfuegbar; Jobs verwenden weiterhin `installExtensions false`.
 
-`build-image.sh` prueft das gebaute Image automatisch ohne Netzwerk: Alle drei
+`build-image.sh` prueft das gebaute Image automatisch ohne Netzwerk: Alle fuenf
 Extensions werden geladen, und ein echter GRETL-Task exportiert CSV nach XLSX
 und Parquet. Die Exporte werden anschliessend inhaltlich geprueft. Der Test
 kann separat wiederholt werden:

@@ -32,7 +32,7 @@ cd ../datenportal-jenkins-dev
 . das Offline-Bundle bauen oder aktualisieren;
 . Jenkins-WAR und Plugin-Manager bei Bedarf herunterladen;
 . Jenkins-Plugins aus `plugins.txt` installieren oder aktualisieren;
-. native DuckDB-Extensions `postgres`, `spatial` und `excel` für den Host
+. native DuckDB-Extensions `postgres`, `spatial`, `excel`, `httpfs` und `s3` für den Host
   installieren beziehungsweise prüfen und den ili2duckdb-Suchpfad einrichten;
 . Jenkins mit `casc/jenkins.yaml` starten.
 
