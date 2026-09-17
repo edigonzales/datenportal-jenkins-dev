@@ -58,7 +58,7 @@ USER jenkins
 
 RUN /opt/java/openjdk17/bin/java \
     -cp '/opt/datenportal/offline-bundle/jars/*' \
-    ch.so.agi.gretl.internal.duckdb.DuckDbExtensionInstaller postgres spatial excel
+    ch.so.agi.gretl.internal.duckdb.DuckDbExtensionInstaller postgres spatial excel httpfs
 
 USER root
 RUN chown -R root:root "${DUCKDB_EXTENSION_DIRECTORY}" \

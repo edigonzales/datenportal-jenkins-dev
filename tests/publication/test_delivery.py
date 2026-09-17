@@ -90,6 +90,9 @@ def delivery(name, data=None, metadata=None, issue=None, write=False, success=Tr
         assert (OUTPUT / 'datasheets.xtf').is_file()
         assert (OUTPUT / 'metadata' / SHEET.name).is_file()
         shutil.copytree(OUTPUT, WORK / f'{sequence:02d}-{name}-outputs')
+        assert report['duckdb']['status'] == 'sql-prepared'
+        assert (OUTPUT / 'catalog-views.sql').is_file()
+        assert not (OUTPUT / 'catalog.duckdb').exists()
         if write:
             promote(OUTPUT)
             shutil.copy(OUTPUT / 'metadata' / SHEET.name, SHEET)

@@ -145,3 +145,10 @@ Paketquelle; die anschliessenden GRETL-Läufe bleiben offline.
 
 Die getrennte S3-/Git-Prüfung im Dev-Stack verwendet eine isolierte Garage-Instanz
 und ein lokales Bare-Repository; siehe dessen `scripts/test-publication.py`.
+
+Für den Playground-Katalog benötigt die native DuckDB zusätzlich `httpfs`.
+Docker-Build und Hoststart installieren sie über denselben GRETL-Installer wie
+die übrigen Extensions; der Job selbst verwendet nur `LOAD httpfs`.
+`test-image-duckdb.sh` prüft die Installation unter `--network none` und führt
+mit einem Loopback-HTTP-Server den kanonischen View-SQL-Vertrag aus dem
+Themenrepo aus. Es werden keine Extensions während eines Jobs heruntergeladen.

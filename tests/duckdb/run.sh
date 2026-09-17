@@ -13,6 +13,7 @@ cd "$test_work_dir"
 
 case "$scenario" in
   positive)
+    /opt/java/openjdk17/bin/java -cp "$DATENPORTAL_OFFLINE_JARS_DIR/*" VerifyPlayground.java /inputs/themenrepo/shared/sql/publication/playground.sql
     /opt/java/openjdk17/bin/java -cp "$DATENPORTAL_OFFLINE_JARS_DIR/*" VerifyDuckDb.java
     ./shared/bin/gradlew-java17.sh --offline --no-daemon -I shared/gradle/init.gradle convert
     /opt/java/openjdk17/bin/java -cp "$DATENPORTAL_OFFLINE_JARS_DIR/*" VerifyDuckDb.java build/result.parquet build/result.xlsx

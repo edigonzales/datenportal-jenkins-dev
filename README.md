@@ -173,7 +173,7 @@ Build-Quelle.
 Das Image verwendet `Europe/Zurich` als Systemzeitzone. Damit verwenden Jenkins,
 Gradle und Konsolenlogs automatisch CET beziehungsweise CEST.
 
-Das Image installiert die DuckDB-Extensions `postgres`, `spatial` und `excel`
+Das Image installiert die DuckDB-Extensions `postgres`, `spatial`, `excel` und `httpfs`
 beim Build mit dem JDBC-Treiber aus dem Offline-Bundle. Sie liegen unter
 `/opt/datenportal/duckdb-extensions`, ausserhalb des Jenkins-Homes, und sind
 zur Laufzeit nur lesbar. `DUCKDB_EXTENSION_DIRECTORY` macht diesen Pfad fuer

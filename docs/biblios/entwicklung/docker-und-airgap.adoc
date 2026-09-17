@@ -70,7 +70,7 @@ Die Trennung der Laufzeiten entspricht damit dem lokalen Shell-Setup.
 == DuckDB-Extensions
 
 Das Dockerfile ruft nach dem Kopieren des Offline-Bundles mit Java 17 den
-vorhandenen GRETL-`DuckDbExtensionInstaller` fuer `postgres spatial excel` auf.
+vorhandenen GRETL-`DuckDbExtensionInstaller` fuer `postgres spatial excel httpfs` auf.
 DuckDB waehlt dabei die zur eingebundenen JDBC-Version und Linux-Architektur
 passenden Binaerdateien. Unterstuetzt werden die Image-Architekturen `amd64`
 und `arm64`; es werden keine auf dem Build-Host installierten Extensions kopiert.

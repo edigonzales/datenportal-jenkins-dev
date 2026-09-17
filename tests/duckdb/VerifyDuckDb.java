@@ -14,7 +14,7 @@ class VerifyDuckDb {
             statement.execute("SET extension_directory = " + literal(extensionDirectory.toString()));
             statement.execute("SET autoinstall_known_extensions = false");
             statement.execute("SET autoload_known_extensions = false");
-            for (String extension : List.of("postgres", "spatial", "excel")) {
+            for (String extension : List.of("postgres", "spatial", "excel", "httpfs")) {
                 statement.execute("LOAD " + extension);
                 // DuckDB stores the postgres alias as postgres_scanner.
                 String name = extension.equals("postgres") ? "postgres_scanner" : extension;

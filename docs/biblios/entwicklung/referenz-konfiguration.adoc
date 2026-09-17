@@ -179,7 +179,7 @@ link:https://codeberg.org/edigonzales/datenportal-themenrepo/src/branch/main/doc
 |`GRADLE_USER_HOME` |Gradle
 |Hoststart setzt `<OFFLINE_BUNDLE_DIR>/gradle-user-home`; Image `/opt/datenportal/offline-bundle/gradle-user-home`.
 |`DUCKDB_EXTENSION_DIRECTORY` |Extension-Installer, Entrypoint, GRETL
-|Hoststart: überschreibbar, Default `build/duckdb-extensions-host`. Image: `/opt/datenportal/duckdb-extensions`. Enthält passende `postgres`, `spatial`, `excel`; Details unter xref:offline-bundle.adoc[Offline-Bundle].
+|Hoststart: überschreibbar, Default `build/duckdb-extensions-host`. Image: `/opt/datenportal/duckdb-extensions`. Enthält passende `postgres`, `spatial`, `excel`, `httpfs`; Details unter xref:offline-bundle.adoc[Offline-Bundle].
 |===
 
 === Build, Installation und Tests
