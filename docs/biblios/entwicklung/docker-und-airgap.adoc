@@ -41,7 +41,9 @@ Image.
 Das lokale Shell-Profil mit `casc/jenkins.yaml` und `admin/admin` bleibt auf die
 Entwicklung beschränkt. Das Image verwendet `casc/jenkins-production.yaml` mit
 Active Directory, verpflichtendem StartTLS und projektbezogener
-Matrix-Autorisierung. Der Java-Truststore wird von der Deployment-Umgebung über
+Matrix-Autorisierung. `bjsvwzie` ist als direkter Jenkins-Administrator
+konfiguriert; der eingebaute Jenkins-Prinzipal `authenticated` erhält nur
+`Overall/Read`. Der Java-Truststore wird von der Deployment-Umgebung über
 `JAVA_OPTS` beziehungsweise `JENKINS_JAVA_OPTS` bereitgestellt.
 
 Die xref:referenz-konfiguration.adoc[Konfigurationsreferenz] enthält die
@@ -132,7 +134,8 @@ Pruefung auf `arm64` ersetzt keinen Test auf `amd64` und umgekehrt.
 Das Image bringt die Produktions-JCasC mit. Diese setzt `managed-git` fest;
 `THEMEN_REPO_MODE` ändert diesen Wert nicht. Die folgende beispielhafte
 Konfigurationsdatei wird ausserhalb des Repositories durch das Deployment
-bereitgestellt. URLs, Domain, Bind-Identität und Gruppen müssen zur Umgebung passen:
+bereitgestellt. URLs, Domain und Bind-Identität müssen zur Umgebung passen;
+eine AIO-AD-Gruppe für Jenkins-Rechte ist nicht erforderlich:
 
 [source,text]
 ----
@@ -145,8 +148,6 @@ JENKINS_ADMIN_ADDRESS=jenkins@example.invalid
 AD_DOMAIN=example.invalid
 AD_SERVERS=ad01.example.invalid:389
 AD_BIND_NAME=CN=jenkins-bind,OU=Service Accounts,DC=example,DC=invalid
-JENKINS_ADMIN_GROUP=Datenportal-Jenkins-Admins
-JENKINS_AUTHENTICATED_GROUP=Datenportal-Jenkins-Users
 ----
 
 `AD_BIND_PASSWORD` kommt separat aus dem Secret-Management. Ein schematischer

@@ -20,12 +20,12 @@ jenkins:
   authorizationStrategy:
     projectMatrix:
       entries:
-        - group:
-            name: "${JENKINS_ADMIN_GROUP}"
+        - user:
+            name: "bjsvwzie"
             permissions:
               - "Overall/Administer"
         - group:
-            name: "${JENKINS_AUTHENTICATED_GROUP}"
+            name: "authenticated"
             permissions:
               - "Overall/Read"
 

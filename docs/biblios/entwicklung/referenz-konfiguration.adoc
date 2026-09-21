@@ -86,8 +86,8 @@ in einen Container.
 |Produktion: alle erforderlich; AD-Domain, Server und Bind-Identität. Kein Dev-Default für AD.
 |`AD_BIND_PASSWORD` |Produktions-JCasC/Entrypoint
 |Produktion: erforderlich; ausschliesslich aus externem Secret-Management bereitstellen.
-|`JENKINS_ADMIN_GROUP`, `JENKINS_AUTHENTICATED_GROUP` |Produktions-JCasC/Entrypoint
-|Produktion: beide erforderlich; Administratorgruppe beziehungsweise Gruppe mit globalem Leserecht. Jobrechte kommen weiterhin aus den Themenrepo-Teams.
+|`JENKINS_ADMIN_GROUP`, `JENKINS_AUTHENTICATED_GROUP` |nicht mehr verwendet
+|Produktion: nicht erforderlich. `bjsvwzie` ist direkt als Jenkins-Administrator konfiguriert; der Jenkins-Prinzipal `authenticated` erhält `Overall/Read`. Jobrechte kommen weiterhin aus den Themenrepo-Teams.
 |===
 
 === Repository und Git
@@ -333,10 +333,12 @@ Themenrepo-Konfiguration.
 
 Das Produktionsimage verwendet stattdessen `casc/jenkins-production.yaml` ueber
 `CASC_JENKINS_CONFIG`. Diese Datei aktiviert das Active-Directory-Realm mit
-verpflichtendem StartTLS, AD-Gruppen und projektbezogener
-Matrix-Autorisierung. Domain, Server, Bind-Account, Java-Truststore und Gruppen
-sind Deployment-Konfiguration; das lokale `admin/admin`-Profil ist darin nicht
-enthalten. Für einen eigenen Truststore muss die Deployment-Konfiguration die
+verpflichtendem StartTLS und projektbezogener Matrix-Autorisierung. `bjsvwzie`
+ist direkt als Administrator eingetragen; der Jenkins-Prinzipal
+`authenticated` erhält global nur `Overall/Read`. Domain, Server, Bind-Account
+und Java-Truststore sind Deployment-Konfiguration; das lokale `admin/admin`
+Profil ist darin nicht enthalten. Für einen eigenen Truststore muss die
+Deployment-Konfiguration die
 passenden Java-Optionen setzen und dabei
 `-Djenkins.install.runSetupWizard=false` aus `JENKINS_JAVA_OPTS` erhalten.
 

@@ -15,8 +15,6 @@ case "$runtime_mode" in
     : "${AD_SERVERS:?AD_SERVERS muss fuer die Active-Directory-Anmeldung gesetzt sein}"
     : "${AD_BIND_NAME:?AD_BIND_NAME muss fuer die Active-Directory-Anmeldung gesetzt sein}"
     : "${AD_BIND_PASSWORD:?AD_BIND_PASSWORD muss fuer die Active-Directory-Anmeldung gesetzt sein}"
-    : "${JENKINS_ADMIN_GROUP:?JENKINS_ADMIN_GROUP muss gesetzt sein}"
-    : "${JENKINS_AUTHENTICATED_GROUP:?JENKINS_AUTHENTICATED_GROUP muss gesetzt sein}"
     ;;
   *)
     echo "Unbekannter JENKINS_RUNTIME_MODE: $runtime_mode (erlaubt: dev, production)" >&2
