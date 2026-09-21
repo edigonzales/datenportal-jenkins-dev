@@ -1,0 +1,155 @@
+name: Publish Docker image
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      plugin_version:
+        description: 'Optional exact plugin version (x.y.z or x.y.z-SNAPSHOT)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-docker-image
+  cancel-in-progress: false
+
+env:
+  IMAGE_NAME: datenportal-jenkins:ci
+  DOCKERHUB_IMAGE: sogis/datenportal-jenkins
+  PLUGIN_GROUP: ch.so.agi.jenkins
+  PLUGIN_ARTIFACT: jenkins-gretl-datenportal-plugin
+  THEMEN_REPO_URL: https://codeberg.org/edigonzales/datenportal-themenrepo.git
+  THEMEN_REPO_DIR: ${{ github.workspace }}/../datenportal-themenrepo
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out image repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v mvn >/dev/null 2>&1 || ! command -v rsync >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y maven rsync
+          fi
+          java -version
+          mvn --version
+
+      - name: Check out Themenrepo
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$THEMEN_REPO_DIR"
+          git clone --depth 1 --branch main "$THEMEN_REPO_URL" "$THEMEN_REPO_DIR"
+
+      - name: Resolve plugin version
+        id: plugin
+        shell: bash
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          REQUESTED_PLUGIN_VERSION: ${{ inputs.plugin_version }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$REF_TYPE" == "tag" ]]; then
+            if [[ "$REF_NAME" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+              tag_plugin_version="${BASH_REMATCH[1]}"
+            else
+              echo "Expected a tag in the form vX.Y.Z, got: $REF_NAME" >&2
+              exit 1
+            fi
+            python3 bin/resolve_plugin_version.py \
+              --version "$tag_plugin_version" \
+              --repository-url https://jars.interlis.guru/releases >> "$GITHUB_OUTPUT"
+          elif [[ -n "$REQUESTED_PLUGIN_VERSION" ]]; then
+            python3 bin/resolve_plugin_version.py \
+              --version "$REQUESTED_PLUGIN_VERSION" >> "$GITHUB_OUTPUT"
+          else
+            python3 bin/resolve_plugin_version.py >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "Using plugin version: $(grep '^plugin_version=' "$GITHUB_OUTPUT" | tail -n 1)"
+
+      - name: Determine image version
+        id: image
+        shell: bash
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          PLUGIN_BASE_VERSION: ${{ steps.plugin.outputs.plugin_base_version }}
+        run: |
+          set -euo pipefail
+          if [[ "$REF_TYPE" == "tag" ]]; then
+            image_version="${REF_NAME#v}"
+          else
+            image_version="${PLUGIN_BASE_VERSION}-${GITHUB_RUN_NUMBER}"
+          fi
+          echo "image_version=$image_version" >> "$GITHUB_OUTPUT"
+          echo "Image version: $image_version"
+
+      - name: Build and test image
+        shell: bash
+        env:
+          IMAGE_VERSION: ${{ steps.image.outputs.image_version }}
+          PLUGIN_VERSION: ${{ steps.plugin.outputs.plugin_version }}
+          PLUGIN_REPOSITORY_URL: ${{ steps.plugin.outputs.plugin_repository_url }}
+        run: |
+          set -euo pipefail
+          THEMEN_REPO_DIR="$THEMEN_REPO_DIR" \
+          IMAGE_NAME="$IMAGE_NAME" \
+          IMAGE_VERSION="$IMAGE_VERSION" \
+          PLUGIN_SOURCE=maven \
+          PLUGIN_GROUP="$PLUGIN_GROUP" \
+          PLUGIN_ARTIFACT="$PLUGIN_ARTIFACT" \
+          PLUGIN_VERSION="$PLUGIN_VERSION" \
+          PLUGIN_REPOSITORY_URL="$PLUGIN_REPOSITORY_URL" \
+            ./bin/build-image.sh
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag and push image
+        shell: bash
+        env:
+          IMAGE_VERSION: ${{ steps.image.outputs.image_version }}
+          GHCR_OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          ghcr_owner="$(printf '%s' "$GHCR_OWNER" | tr '[:upper:]' '[:lower:]')"
+
+          for tag in latest "$IMAGE_VERSION"; do
+            docker tag "$IMAGE_NAME" "$DOCKERHUB_IMAGE:$tag"
+            docker tag "$IMAGE_NAME" "ghcr.io/$ghcr_owner/datenportal-jenkins:$tag"
+
+            docker push "$DOCKERHUB_IMAGE:$tag"
+            docker push "ghcr.io/$ghcr_owner/datenportal-jenkins:$tag"
+          done
