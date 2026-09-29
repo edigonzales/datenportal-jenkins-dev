@@ -152,6 +152,24 @@ cd ../datenportal-jenkins-dev
 ./bin/build-image.sh
 ```
 
+Der lokale Build benötigt Docker mit Buildx und Python 3. Optional legt
+`IMAGE_PLATFORM=linux/arm64` beziehungsweise `linux/amd64` genau eine Plattform
+fest; ohne Angabe gilt die Standardplattform des Builders. Das Image wird mit
+`--load` lokal geladen und vor Erfolgsmeldung offline geprüft. Ein Multiarch-Image
+wird im Veröffentlichungsworkflow aus den einzeln geprüften Images gebildet.
+
+`bin/prepare-image-context.sh` bereitet unter `build/docker-context` Dockerfile,
+Plugin, Offline-Bundle und `build-args.json` vor. Ein bereits vorbereiteter
+Kontext kann ohne erneute Maven-/Gradle-Auflösung gebaut werden:
+
+```bash
+IMAGE_PLATFORM=linux/arm64 ./bin/build-image.sh --prepared-context build/docker-context
+```
+
+Build-Versionen und Labels kommen bei dieser Variante ausschliesslich aus dem
+vorbereiteten Kontext. `IMAGE_NAME` wählt weiterhin den lokalen Zielnamen.
+`THEMEN_REPO_DIR` muss auf den dazugehörigen Themenrepo-Stand für die Tests zeigen.
+
 Das gemeinsame Image heisst `datenportal-jenkins`. Der lokale Default-Tag ist
 `datenportal-jenkins:local`; für die Registry kann `IMAGE_NAME` und
 `IMAGE_VERSION` gesetzt werden. Es unterstützt die Laufzeitmodi
@@ -264,3 +282,48 @@ Defaults und erforderliche ENV-Werte stehen in der
 Der Offline-Test führt keine Git-Schreiboperationen aus. Die ergänzende
 S3-/Git-Integration mit realer Garage und isoliertem Bare-Repository liegt im
 Dev-Stack: `python3 scripts/test-publication.py`.
+
+## Multiarch-Veröffentlichung über den GitHub-Mirror
+
+Codeberg ist das führende Repository. Änderungen an
+`.github/workflows/publish-docker-image.yml` werden dort gepflegt und über den
+Mirror nach GitHub übertragen; GitHub führt die Actions aus.
+
+Der Workflow behält Pushes auf `main`, Tags `vX.Y.Z` und manuellen Start bei.
+Versionswahl und Secrets bleiben unverändert. Docker Hub und GHCR erhalten
+jeweils denselben Versions-Tag und `latest` für **linux/amd64 und linux/arm64**.
+
+1. `prepare` wählt Plugin/Image-Version und Themenrepo-Commit einmal aus und
+   erstellt ein gemeinsames Kontext-Artefakt. Auch ein Snapshot-HPI und das
+   gesamte Offline-Bundle werden nur einmal aufgelöst. Die Tests erhalten
+   einen Git-Export derselben Themenrepo-Revision.
+2. `build` verwendet native Runner `ubuntu-24.04` und `ubuntu-24.04-arm` mit
+   Buildx. Beide bauen mit identischem Kontext, prüfen die Imagearchitektur
+   und führen die DuckDB-Offline-Tests aus. Java 17 und die DuckDB-Extensions
+   werden innerhalb des jeweiligen Zielimages für dessen Architektur installiert.
+3. Erfolgreiche Jobs pushen nur Zwischen-Tags
+   `ci-<run-id>-<run-attempt>-<arch>` in beide Registries.
+4. `publish` läuft nur nach Erfolg beider Architekturjobs. Es prüft zuerst
+   sämtliche Zwischenimages auf Plattform und Digest, erstellt die gemeinsamen
+   Manifeste aus diesen Digests und prüft danach beide Tags in beiden Registries.
+   Bei fehlgeschlagenem Build/Test bleiben Versions-Tag und `latest` unverändert.
+
+Für einen erneuten Versuch **alle Jobs erneut ausführen**, damit beide
+Architekturimages zum gleichen `run-attempt` gehören. Zwischen-Tags können bei
+Fehlern zurückbleiben; sie sind keine freigegebenen Versionen. Updates über zwei
+Registries sind nicht atomar: Scheitert der abschliessende Registryzugriff, den
+Workflowstatus und beide Registry-Manifeste prüfen und den ganzen Lauf wiederholen.
+Automatisches Löschen fremder oder älterer Images findet nicht statt.
+
+Lokale Regressionstests (ohne Push):
+
+```bash
+python3 -m unittest discover -s tests
+```
+
+Sie prüfen unter anderem den Abbruch bei falscher Plattform, das Weiterreichen
+von Testfehlern und die Veröffentlichungssperre bei fehlenden Architekturimages.
+Ein neuer Digest wird erst nach erfolgreichem CI-Lauf in Betreiber-/CRC-Manifeste
+übernommen. Der Workflow baut keine Sodata-Images und führt keine S3-Publikation aus.
+
+Aktueller Nachweis und verbleibende Prüfungen: [Multiarch-Prüfstand](docs/multiarch-validation.md).

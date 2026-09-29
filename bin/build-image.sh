@@ -4,136 +4,55 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 THEMEN_REPO_DIR="${THEMEN_REPO_DIR:-$ROOT_DIR/../datenportal-themenrepo}"
-PLUGIN_REPO="${PLUGIN_REPO:-$ROOT_DIR/../datenportal-jenkins-gretl-plugin}"
-PLUGIN_HPI_SOURCE="${PLUGIN_HPI_SOURCE:-}"
-PLUGIN_SOURCE="${PLUGIN_SOURCE:-auto}"
-PLUGIN_GROUP="${PLUGIN_GROUP:-ch.so.agi.jenkins}"
-PLUGIN_ARTIFACT="${PLUGIN_ARTIFACT:-jenkins-gretl-datenportal-plugin}"
-PLUGIN_VERSION="${PLUGIN_VERSION:-0.1.0-SNAPSHOT}"
-PLUGIN_REPOSITORY_URL="${PLUGIN_REPOSITORY_URL:-https://jars.interlis.guru/snapshots}"
-MAVEN_REPO_LOCAL="${MAVEN_REPO_LOCAL:-${HOME}/.m2/repository}"
-OFFLINE_BUNDLE_DIR="${OFFLINE_BUNDLE_DIR:-$ROOT_DIR/build/offline-bundle}"
-DOCKER_CONTEXT_DIR="$ROOT_DIR/build/docker-context"
 IMAGE_NAME="${IMAGE_NAME:-datenportal-jenkins:local}"
-IMAGE_VERSION="${IMAGE_VERSION:-local}"
-JENKINS_VERSION="${JENKINS_VERSION:-2.555.2}"
-JENKINS_IMAGE="${JENKINS_IMAGE:-jenkins/jenkins:${JENKINS_VERSION}-lts-jdk21}"
-TEMURIN17_VERSION="${TEMURIN17_VERSION:-17.0.15+6}"
-
-command -v docker >/dev/null || { echo "Docker fehlt."; exit 1; }
-command -v rsync >/dev/null || { echo "rsync fehlt."; exit 1; }
-
-resolve_local_plugin() {
-  command -v mvn >/dev/null || {
-    echo "Maven fehlt fuer den lokalen Plugin-Build." >&2
-    return 1
+IMAGE_PLATFORM="${IMAGE_PLATFORM:-}"
+DOCKER_CONTEXT_DIR="$ROOT_DIR/build/docker-context"
+prepared=false
+if [[ $# -gt 0 ]]; then
+  [[ $# -eq 2 && "$1" = --prepared-context && -n "$2" ]] || {
+    echo 'Aufruf: build-image.sh [--prepared-context VERZEICHNIS]' >&2; exit 2;
   }
-
-  if [ ! -d "$PLUGIN_REPO" ]; then
-    echo "Plugin-Repository nicht gefunden: $PLUGIN_REPO" >&2
-    return 1
-  fi
-
-  echo "Baue Jenkins-Plugin lokal ..." >&2
-  (
-    cd "$PLUGIN_REPO"
-    mvn -ntp package >&2
-  )
-
-  find "$PLUGIN_REPO/target" -maxdepth 1 -type f -name '*.hpi' -print | sort | tail -n 1
-}
-
-resolve_maven_plugin() {
-  command -v mvn >/dev/null || {
-    echo "Maven fehlt fuer die Plugin-Aufloesung aus Maven." >&2
-    return 1
-  }
-
-  local coordinate="${PLUGIN_GROUP}:${PLUGIN_ARTIFACT}:${PLUGIN_VERSION}:hpi"
-  echo "Loese Jenkins-Plugin aus Maven auf: $coordinate" >&2
-  mvn -ntp org.apache.maven.plugins:maven-dependency-plugin:3.8.1:get \
-    -Dartifact="$coordinate" \
-    -DremoteRepositories="jars.interlis.guru::default::${PLUGIN_REPOSITORY_URL}" \
-    -Dmaven.repo.local="$MAVEN_REPO_LOCAL" \
-    -Dtransitive=false >&2
-
-  find "$MAVEN_REPO_LOCAL/${PLUGIN_GROUP//.//}/${PLUGIN_ARTIFACT}/${PLUGIN_VERSION}" \
-    -maxdepth 1 -type f -name '*.hpi' -print | sort | tail -n 1
-}
-
-resolve_plugin_hpi() {
-  if [ -n "$PLUGIN_HPI_SOURCE" ]; then
-    printf '%s\n' "$PLUGIN_HPI_SOURCE"
-    return 0
-  fi
-
-  case "$PLUGIN_SOURCE" in
-    local)
-      resolve_local_plugin
-      ;;
-    maven)
-      resolve_maven_plugin
-      ;;
-    auto)
-      if [ -d "$PLUGIN_REPO" ]; then
-        resolve_local_plugin
-      else
-        resolve_maven_plugin
-      fi
-      ;;
-    *)
-      echo "Unbekannter PLUGIN_SOURCE: $PLUGIN_SOURCE (erlaubt: local, maven, auto)" >&2
-      return 1
-      ;;
-  esac
-}
-
-PLUGIN_HPI_SOURCE="$(resolve_plugin_hpi)"
-if [ ! -f "$PLUGIN_HPI_SOURCE" ]; then
-  echo "Plugin-HPI nicht gefunden: $PLUGIN_HPI_SOURCE" >&2
-  exit 1
+  DOCKER_CONTEXT_DIR="$2"
+  prepared=true
 fi
-
-if [ ! -f "$THEMEN_REPO_DIR/shared/gradle/gradle-build.properties" ]; then
-  echo "Gradle-Build-Konfiguration des Themenrepos nicht gefunden: $THEMEN_REPO_DIR" >&2
-  exit 1
+case "$IMAGE_PLATFORM" in
+  ''|linux/amd64|linux/arm64) ;;
+  *) echo 'IMAGE_PLATFORM muss linux/amd64 oder linux/arm64 sein.' >&2; exit 2 ;;
+esac
+command -v docker >/dev/null || { echo 'Docker fehlt.' >&2; exit 1; }
+command -v python3 >/dev/null || { echo 'Python 3 fehlt.' >&2; exit 1; }
+docker buildx version >/dev/null
+if ! $prepared; then
+  "$SCRIPT_DIR/prepare-image-context.sh"
 fi
-
-GRETL_VERSION="${GRETL_VERSION:-$(awk -F= '$1 == "datenportal.plugin.gretl.version" {print $2}' "$THEMEN_REPO_DIR/shared/gradle/gradle-build.properties" | tr -d '[:space:]')}"
-GRETL_VERSION="${GRETL_VERSION:-unknown}"
-THEMEN_REPO_REVISION="${THEMEN_REPO_REVISION:-$(git -C "$THEMEN_REPO_DIR" rev-parse HEAD 2>/dev/null || printf 'unknown')}"
-PLUGIN_REPO_REVISION="${PLUGIN_REPO_REVISION:-$(git -C "$PLUGIN_REPO" rev-parse HEAD 2>/dev/null || printf 'unknown')}"
-
-"$ROOT_DIR/bin/build-offline-bundle.sh" "$OFFLINE_BUNDLE_DIR"
-
-rm -rf "$DOCKER_CONTEXT_DIR"
-mkdir -p "$DOCKER_CONTEXT_DIR/offline-bundle"
-
-cp "$ROOT_DIR/plugins.txt" "$DOCKER_CONTEXT_DIR/plugins.txt"
-cp "$ROOT_DIR/casc/jenkins-production.yaml" "$DOCKER_CONTEXT_DIR/jenkins.yaml"
-cp "$ROOT_DIR/bin/configure-duckdb-extensions.sh" "$DOCKER_CONTEXT_DIR/configure-duckdb-extensions.sh"
-cp "$ROOT_DIR/docker-entrypoint.sh" "$DOCKER_CONTEXT_DIR/docker-entrypoint.sh"
-cp "$PLUGIN_HPI_SOURCE" "$DOCKER_CONTEXT_DIR/jenkins-gretl-datenportal-plugin.jpi"
-rsync -a --delete \
-  --exclude '.DS_Store' \
-  "$OFFLINE_BUNDLE_DIR/" "$DOCKER_CONTEXT_DIR/offline-bundle/"
-
-docker build \
-  --build-arg JENKINS_IMAGE="$JENKINS_IMAGE" \
-  --build-arg IMAGE_VERSION="$IMAGE_VERSION" \
-  --build-arg PLUGIN_VERSION="$PLUGIN_VERSION" \
-  --build-arg GRETL_VERSION="$GRETL_VERSION" \
-  --build-arg THEMEN_REPO_REVISION="$THEMEN_REPO_REVISION" \
-  --build-arg PLUGIN_REPO_REVISION="$PLUGIN_REPO_REVISION" \
-  --build-arg TEMURIN17_VERSION="$TEMURIN17_VERSION" \
-  -f "$ROOT_DIR/Dockerfile" \
-  -t "$IMAGE_NAME" \
-  "$DOCKER_CONTEXT_DIR"
-
-THEMEN_REPO_DIR="$THEMEN_REPO_DIR" "$ROOT_DIR/bin/test-image-duckdb.sh" "$IMAGE_NAME"
-
-echo
-echo "Docker-Image gebaut und DuckDB offline geprueft: $IMAGE_NAME"
-if [ "${RUN_PUBLICATION_TESTS:-0}" = "1" ]; then
-  THEMEN_REPO_DIR="$THEMEN_REPO_DIR" "$ROOT_DIR/bin/test-image-publication.sh" "$IMAGE_NAME"
+# A prepared context is complete: no Maven, Java or dependency downloads on this host.
+[[ -f "$DOCKER_CONTEXT_DIR/Dockerfile" ]] || { echo 'Dockerfile im Kontext fehlt.' >&2; exit 1; }
+# Validate before process substitution so parser failures cannot be swallowed by Bash.
+build_arguments="$(python3 - "$DOCKER_CONTEXT_DIR/build-args.json" <<'PYARGS'
+import json
+import sys
+with open(sys.argv[1]) as stream:
+    args = json.load(stream)
+expected = {'JENKINS_IMAGE', 'IMAGE_VERSION', 'PLUGIN_VERSION', 'GRETL_VERSION',
+            'THEMEN_REPO_REVISION', 'PLUGIN_REPO_REVISION', 'TEMURIN17_VERSION'}
+if set(args) != expected or any(not isinstance(v, str) or not v or '\n' in v or '\r' in v for v in args.values()):
+    raise SystemExit('Ungueltige Build-Metadaten im vorbereiteten Kontext.')
+for key, value in args.items():
+    print(f'{key}={value}')
+PYARGS
+)"
+# A nonempty array also works with macOS Bash 3.2 and set -u.
+# Load one platform so tests run against the exact image that will be pushed.
+build_args=(buildx build --load --provenance=false)
+if [[ -n "$IMAGE_PLATFORM" ]]; then build_args+=(--platform "$IMAGE_PLATFORM"); fi
+while IFS= read -r argument; do build_args+=(--build-arg "$argument"); done <<< "$build_arguments"
+docker "${build_args[@]}" -f "$DOCKER_CONTEXT_DIR/Dockerfile" -t "$IMAGE_NAME" "$DOCKER_CONTEXT_DIR"
+if [[ -n "$IMAGE_PLATFORM" ]]; then
+  actual="$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$IMAGE_NAME")"
+  [[ "$actual" = "$IMAGE_PLATFORM" ]] || { echo "Image-Plattform $actual statt $IMAGE_PLATFORM" >&2; exit 1; }
+fi
+THEMEN_REPO_DIR="$THEMEN_REPO_DIR" "$SCRIPT_DIR/test-image-duckdb.sh" "$IMAGE_NAME"
+printf '\nDocker-Image gebaut und DuckDB offline geprueft: %s\n' "$IMAGE_NAME"
+if [[ "${RUN_PUBLICATION_TESTS:-0}" = 1 ]]; then
+  THEMEN_REPO_DIR="$THEMEN_REPO_DIR" "$SCRIPT_DIR/test-image-publication.sh" "$IMAGE_NAME"
 fi

@@ -30,8 +30,12 @@ env:
   THEMEN_REPO_DIR: ${{ github.workspace }}/../datenportal-themenrepo
 
 jobs:
-  build-and-publish:
-    runs-on: ubuntu-latest
+  prepare:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      image_version: ${{ steps.image.outputs.image_version }}
     steps:
       - name: Check out image repository
         uses: actions/checkout@v4
@@ -106,23 +110,71 @@ jobs:
           echo "image_version=$image_version" >> "$GITHUB_OUTPUT"
           echo "Image version: $image_version"
 
-      - name: Build and test image
+      - name: Prepare shared context and test inputs
         shell: bash
         env:
           IMAGE_VERSION: ${{ steps.image.outputs.image_version }}
           PLUGIN_VERSION: ${{ steps.plugin.outputs.plugin_version }}
           PLUGIN_REPOSITORY_URL: ${{ steps.plugin.outputs.plugin_repository_url }}
+          PLUGIN_SOURCE: maven
         run: |
           set -euo pipefail
-          THEMEN_REPO_DIR="$THEMEN_REPO_DIR" \
-          IMAGE_NAME="$IMAGE_NAME" \
-          IMAGE_VERSION="$IMAGE_VERSION" \
-          PLUGIN_SOURCE=maven \
-          PLUGIN_GROUP="$PLUGIN_GROUP" \
-          PLUGIN_ARTIFACT="$PLUGIN_ARTIFACT" \
-          PLUGIN_VERSION="$PLUGIN_VERSION" \
-          PLUGIN_REPOSITORY_URL="$PLUGIN_REPOSITORY_URL" \
-            ./bin/build-image.sh
+          python3 -m unittest discover -s tests
+          ./bin/prepare-image-context.sh
+          tar -czf build/image-context.tar.gz -C build/docker-context .
+          git -C "$THEMEN_REPO_DIR" archive --format=tar.gz \
+            -o "$GITHUB_WORKSPACE/build/themenrepo.tar.gz" HEAD
+
+      - name: Transfer identical inputs to both architectures
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-inputs
+          path: |
+            build/image-context.tar.gz
+            build/themenrepo.tar.gz
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+
+  build:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Check out image repository
+        uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Download prepared inputs
+        uses: actions/download-artifact@v4
+        with:
+          name: image-inputs
+          path: build/inputs
+
+      - name: Restore shared context and Themenrepo revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/docker-context "$THEMEN_REPO_DIR"
+          tar -xzf build/inputs/image-context.tar.gz -C build/docker-context
+          tar -xzf build/inputs/themenrepo.tar.gz -C "$THEMEN_REPO_DIR"
+
+      - name: Build and test native image
+        shell: bash
+        env:
+          IMAGE_PLATFORM: linux/${{ matrix.arch }}
+        run: |
+          set -euo pipefail
+          ./bin/build-image.sh --prepared-context build/docker-context
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -137,19 +189,53 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Tag and push image
+      - name: Push tested platform image under run-specific tags
         shell: bash
         env:
-          IMAGE_VERSION: ${{ steps.image.outputs.image_version }}
           GHCR_OWNER: ${{ github.repository_owner }}
+          STAGING_TAG: ci-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.arch }}
         run: |
           set -euo pipefail
           ghcr_owner="$(printf '%s' "$GHCR_OWNER" | tr '[:upper:]' '[:lower:]')"
-
-          for tag in latest "$IMAGE_VERSION"; do
-            docker tag "$IMAGE_NAME" "$DOCKERHUB_IMAGE:$tag"
-            docker tag "$IMAGE_NAME" "ghcr.io/$ghcr_owner/datenportal-jenkins:$tag"
-
-            docker push "$DOCKERHUB_IMAGE:$tag"
-            docker push "ghcr.io/$ghcr_owner/datenportal-jenkins:$tag"
+          for image in "$DOCKERHUB_IMAGE" "ghcr.io/$ghcr_owner/datenportal-jenkins"; do
+            docker tag "$IMAGE_NAME" "$image:$STAGING_TAG"
+            docker push "$image:$STAGING_TAG"
           done
+
+  publish:
+    # No always(): a failed or cancelled architecture must not update release tags.
+    needs: [prepare, build]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out image repository
+        uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish and verify both multi-platform tags
+        shell: bash
+        env:
+          IMAGE_VERSION: ${{ needs.prepare.outputs.image_version }}
+          GHCR_OWNER: ${{ github.repository_owner }}
+          STAGING_PREFIX: ci-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          ghcr_owner="$(printf '%s' "$GHCR_OWNER" | tr '[:upper:]' '[:lower:]')"
+          python3 bin/publish_multiarch.py \
+            --image "$DOCKERHUB_IMAGE" \
+            --image "ghcr.io/$ghcr_owner/datenportal-jenkins" \
+            --version "$IMAGE_VERSION" --staging-prefix "$STAGING_PREFIX"

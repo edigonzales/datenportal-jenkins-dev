@@ -21,6 +21,43 @@ Default-Basisimage:
 
 * `jenkins/jenkins:${JENKINS_VERSION}-lts-jdk21`
 
+== Native amd64-/ARM64-Builds im GitHub-Mirror
+
+Codeberg bleibt das führende Repository. Der GitHub-Mirror führt den Workflow
+`.github/workflows/publish-docker-image.yml` aus. Workflow-Änderungen werden in
+Codeberg gepflegt; eine gesonderte GitHub-Version wird nicht unterhalten.
+
+Die Vorbereitung löst Plugin und Offline-Bundle einmal auf und archiviert den
+Build-Kontext mit `build-args.json` sowie denselben Themenrepo-Commit als
+Testeingabe. Zwei native Runner (`ubuntu-24.04` für amd64,
+`ubuntu-24.04-arm` für ARM64) bauen diesen Kontext mit Buildx und `--load`.
+Jede Architektur muss die tatsächliche Imageplattform und die Offline-Tests
+bestehen. QEMU ist für diese CI-Builds nicht nötig.
+
+Erst nach beiden erfolgreichen Jobs werden die laufbezogenen Zwischenimages
+in Docker Hub und GHCR zu gemeinsamen Versions- und `latest`-Tags zusammengeführt.
+Das Publish-Skript verwendet zuvor geprüfte Digests und kontrolliert die beiden
+Plattformen nach dem Push. Ein Build-/Testfehler darf keinen dieser gemeinsamen
+Tags aktualisieren. Bei Wiederholung alle Jobs erneut starten; Zwischenimages
+tragen auch die Nummer des Laufversuchs. Registryübergreifende Updates sind
+nicht atomar und müssen bei einem Publish-Fehler in beiden Registries geprüft werden.
+
+Der normale lokale Aufruf bleibt `./bin/build-image.sh`; benötigt werden jetzt
+Buildx und Python 3 zusätzlich zu den bisherigen Buildwerkzeugen.
+`IMAGE_PLATFORM` kann genau `linux/amd64` oder `linux/arm64` vorgeben. Eine bereits
+abgeschlossene Vorbereitung kann ohne erneute Dependency-Auflösung verwendet werden:
+
+[source,bash]
+----
+./bin/prepare-image-context.sh
+IMAGE_PLATFORM=linux/arm64 ./bin/build-image.sh --prepared-context build/docker-context
+----
+
+`IMAGE_NAME` bestimmt den lokalen Tag, Versionen und Labels stammen aus
+`build-args.json`. Die vorhandenen Tests laufen auch auf diesem Weg zwingend.
+`THEMEN_REPO_DIR` muss dabei zur vorbereiteten Revision passen. Build-Kontexte
+und Archive bleiben ignorierte Buildartefakte; keine Credentials einbetten.
+
 == Was in den Build-Kontext gestaged wird
 
 Der Image-Build staged:
