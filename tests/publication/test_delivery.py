@@ -317,7 +317,7 @@ delivery('withdrawn-series', metadata='withdrawn.xtf', write=True)
 assert all(text(e, 'publicationStatus') != 'published' for e in resources().values())
 
 # A standalone topic must not require an edition either through Gradle.
-standalone = 'ch.so.agi.av_nachfuehrungsstatistik.personal'
+standalone = 'ch.so.av_nachfuehrungsstatistik.personal'
 standalone_csv = next((PILOT / standalone).glob('*.csv'))
 args = ['/test/repo/shared/bin/gradlew-java17.sh', '--offline', '--no-daemon',
         '-I', '/test/repo/shared/gradle/init.gradle', '-p', '/test/repo/agi',
