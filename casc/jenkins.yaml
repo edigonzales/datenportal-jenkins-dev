@@ -57,7 +57,7 @@ unclassified:
     url: "${JENKINS_URL}"
     adminAddress: "Local Jenkins <noreply@localhost>"
   gretlDatenportalJobs:
-    displayName: "GRETL Datenportal Jobs"
+    displayName: "Datenportal Jobs"
     urlName: "gretl-datenportal"
     topicRepositoryMode: "${THEMEN_REPO_MODE}"
     topicRepositoryUrl: "${THEMEN_REPO_URL}"
