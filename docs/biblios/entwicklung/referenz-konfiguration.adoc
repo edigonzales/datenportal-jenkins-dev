@@ -71,7 +71,7 @@ in einen Container.
 |`JENKINS_RUNTIME_MODE` |Entrypoint, Plugin, Git-Gradle
 |Image/Entrypoint: `production`; `start.sh` und Dev-Compose: fest `dev`. Im Image sind nur `dev` und `production` erlaubt. Keine automatische JCasC-Auswahl.
 |`CASC_JENKINS_CONFIG` |Jenkins/JCasC
-|Image: `/usr/share/jenkins/ref/casc_configs/jenkins.yaml` (Produktionsinhalt). `start.sh`: fest die lokale `casc/jenkins.yaml`. Dev-Compose: fest `/opt/datenportal/casc/jenkins-local.yaml` mit lokalem Mount.
+|Image: `/usr/share/jenkins/ref/casc_configs/jenkins.yaml` (Produktionsinhalt). `start.sh`: fest die lokale `casc/jenkins.yaml`. Dev-Compose: fest `/opt/datenportal/casc/jenkins-stack.yaml`, read-only aus der Stack-eigenen Test-JCasC. Kein Jenkins-Quellcheckout für Registry-Images nötig.
 |`JENKINS_URL` |beide JCasC-Dateien, Produktionsprüfung
 |Hoststart: `http://localhost:<JENKINS_PORT>/`; Dev-Compose setzt die lokale URL. Produktion: nichtleer erforderlich, extern erreichbare Jenkins-URL.
 |`TZ` |Containerlaufzeit
@@ -407,7 +407,7 @@ link:https://codeberg.org/edigonzales/datenportal-themenrepo/src/branch/main/doc
 
 `DATENPORTAL_S3_PUBLISH` (Default `true`) setzt die eigene Garage-Schreibfreigabe.
 `DATENPORTAL_PUBLICATION_MANIFEST_URL` hat den Default
-`http://downloads:8081/ch.so.daten/current.json` im Compose-Netz.
+`http://jenkins:8081/ch.so.daten/current.json` im Compose-Netz.
 `DATENPORTAL_PORTAL_RELOAD_URL` und `DATENPORTAL_PORTAL_RELOAD_TOKEN` bleiben
 standardmässig leer; das Token ist ein externes Secret.
 Änderungen an diesen ENV-Werten erfordern ein Neuerstellen des Jenkins-Containers.

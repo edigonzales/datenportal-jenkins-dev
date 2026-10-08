@@ -26,8 +26,11 @@ Nicht hierher gehoeren:
 Die folgenden Befehle betreffen den separaten Shellstart von Jenkins. Für das
 Gesamtsystem mit Garage, Editor und Portal gilt die
 [Dev-Stack-Inbetriebnahme](https://codeberg.org/edigonzales/datenportal-dev-stack/src/branch/main/docs/biblios/inbetriebnahme.adoc).
-Dort werden lokale Images, Pluginersatz im Compose-Volume, Seeder und Root-
-Initialisierung beschrieben. `working-tree` verhindert Git-Schreiben; S3 ist
+Dort bereitet `scripts/up.sh` den Stack vollständig vor, einschliesslich
+erfolgreichem Seed, lokaler Erstpublikation und Portalstart. Die gemeinsame
+Stack-Test-JCasC liegt im Dev-Stack; dieser Jenkins-Quellcheckout ist dort nur
+für lokale Image-Builds erforderlich. Pluginersatz und administrativer
+Migrationsweg bleiben ebenfalls dort beschrieben. `working-tree` verhindert Git-Schreiben; S3 ist
 im Compose-Stack standardmässig freigegeben. Der Shellstart bleibt ohne
 zusätzliche S3-Freigabe Vorschau.
 
