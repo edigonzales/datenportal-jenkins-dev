@@ -15,7 +15,9 @@ done
 # Each case gets a fresh home and workspace; no host caches or Jenkins volumes.
 for scenario in positive missing-extensions; do
   echo "DuckDB image test: $scenario ($TEST_IMAGE)"
+  # Keep the temporary Gradle workspace off Docker Desktop's finite overlay.
   docker run --rm --network none --user jenkins \
+    --tmpfs /tmp:rw,exec,uid=1000,gid=1000,mode=1777,size=2g \
     --tmpfs /var/jenkins_home:uid=1000,gid=1000,mode=0700 \
     --mount "type=bind,source=$THEMEN_REPO_DIR,target=/inputs/themenrepo,readonly" \
     --mount "type=bind,source=$ROOT_DIR/tests/duckdb,target=/inputs/test,readonly" \
